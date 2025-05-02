@@ -251,7 +251,6 @@ function openModal(src) {
 
 
   document.addEventListener("DOMContentLoaded", function () {
-  const container = document.getElementById("video-container");
     let currentSortKey = 'latest';
     let currentSortOrder = 'desc'; // desc=降順 / asc=昇順
 
@@ -319,26 +318,26 @@ function openModal(src) {
     console.log("=== Debug: currentUser ===", currentUser);
     console.log("=== Debug: all videos ===", videos);
 
-    // fetch("http://192.168.11.18:3000/api/userinfo", { credentials: "include" })
-//       .then(res => res.json())
-//       .then(data => {
-//         if (data.favorites) {
-//           localStorage.setItem(favoritesKey, JSON.stringify(data.favorites));
-//         }
-// 
-//       if (data.favorites && Array.isArray(data.favorites)) {
-//         videos.sort((a, b) => {
-//           const aIdx = data.favorites.indexOf(a.id);
-//           const bIdx = data.favorites.indexOf(b.id);
-//           return (aIdx === -1 ? 9999 : aIdx) - (bIdx === -1 ? 9999 : bIdx);
-//         });
+    fetch("/.netlify/functions/userinfo", { credentials: "include" })
+      .then(res => res.json())
+      .then(data => {
+        if (data.favorites) {
+          localStorage.setItem(favoritesKey, JSON.stringify(data.favorites));
+        }
+
+      if (data.favorites && Array.isArray(data.favorites)) {
+        videos.sort((a, b) => {
+          const aIdx = data.favorites.indexOf(a.id);
+          const bIdx = data.favorites.indexOf(b.id);
+          return (aIdx === -1 ? 9999 : aIdx) - (bIdx === -1 ? 9999 : bIdx);
+        });
       }
     
       render(); // ← 並び替えた順で描画される
 
           // ✅ 視聴履歴・視聴カウントの送信
     function trackView(videoId) {
-      fetch("http://192.168.11.18:3000/api/userinfo", {
+      fetch("/.netlify/functions/userinfo", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -408,7 +407,7 @@ function openModal(src) {
       
         localStorage.setItem(favoritesKey, JSON.stringify(updatedFavorites));
        // ★NASにも保存（favorites）
-       fetch("http://192.168.11.18:3000/api/userinfo", {
+       fetch("/.netlify/functions/userinfo", {
          method: "POST",
          headers: { "Content-Type": "application/json" },
          credentials: "include",
@@ -464,7 +463,7 @@ function openModal(src) {
 
     // はい → login.html に遷移
     confirm.addEventListener("click", () => {
-      fetch("http://192.168.11.18:3000/api/logout", {
+      fetch("/.netlify/functions/logout", {
         credentials: "include"
       }).then(() => {
         localStorage.clear(); // 任意：localStorageも削除する場合
@@ -474,7 +473,6 @@ function openModal(src) {
   });
 
 //  document.addEventListener("DOMContentLoaded", function () {
-  const container = document.getElementById("video-container");
 //    const currentUser = localStorage.getItem("currentUser");
 //    if (!currentUser) {
 //      alert("ログインが必要です。");
