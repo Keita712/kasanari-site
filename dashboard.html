@@ -251,6 +251,7 @@ function openModal(src) {
 
 
   document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById("video-container");
     let currentSortKey = 'latest';
     let currentSortOrder = 'desc'; // desc=降順 / asc=昇順
 
@@ -473,6 +474,7 @@ function openModal(src) {
   });
 
 //  document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById("video-container");
 //    const currentUser = localStorage.getItem("currentUser");
 //    if (!currentUser) {
 //      alert("ログインが必要です。");
@@ -487,3 +489,66 @@ function openModal(src) {
 
 </body>
 </html>
+
+function render() {
+  const videoContainer = document.getElementById("video-container");
+  videoContainer.innerHTML = "";
+  filteredVideos.forEach(video => {
+    const card = document.createElement('div');
+    card.className = "card-wrapper group";
+    card.dataset.popularity = video.popularity || 0;
+    card.dataset.updated = video.date || "2024-01-01";
+
+    const videoId = video.id;
+    if (!videoId || !video.sampleFilename) return;
+
+    const isFavorite = favorites.includes(videoId);
+
+    card.innerHTML = `
+      <svg class="heart w-6 h-6 ${isFavorite ? 'active' : ''}" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                 2 5.42 4.42 3 7.5 3c1.74 0
+                 3.41 0.81 4.5 2.09C13.09 3.81
+                 14.76 3 16.5 3 19.58 3 22 5.42
+                 22 8.5c0 3.78-3.4 6.86-8.55
+                 11.54L12 21.35z"></path>
+      </svg>
+      <img src="/assets/videos/${video.sampleFilename.replace('.mp4', '.jpg')}" class="w-full h-40 object-cover preview" />
+      <video class="w-full h-40 object-cover hidden" muted loop playsinline preload="none">
+        <source src="/assets/videos/${video.sampleFilename}" type="video/mp4">
+      </video>
+      <div class="text-sm text-gray-200 card-label p-3 text-center cursor-pointer" onclick="openModal('/assets/videos/${video.mainFilename}')">
+        ${video.title}
+      </div>
+    `;
+
+    const heart = card.querySelector('.heart');
+    heart.addEventListener('click', e => {
+      e.stopPropagation();
+      heart.classList.toggle('active');
+      card.classList.toggle('favorite');
+
+      let updatedFavorites = JSON.parse(localStorage.getItem(favoritesKey) || "[]");
+
+      if (heart.classList.contains('active')) {
+        if (!updatedFavorites.includes(videoId)) {
+          updatedFavorites.push(videoId);
+        }
+      } else {
+        updatedFavorites = updatedFavorites.filter(f => f !== videoId);
+      }
+
+      localStorage.setItem(favoritesKey, JSON.stringify(updatedFavorites));
+    });
+
+    const previewImg = card.querySelector('.preview');
+    const videoEl = card.querySelector('video');
+    previewImg.addEventListener('click', e => {
+      previewImg.classList.add('hidden');
+      videoEl.classList.remove('hidden');
+      videoEl.play();
+    });
+
+    videoContainer.appendChild(card);
+  });
+}
