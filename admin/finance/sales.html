@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>売上管理 - KASANARI 管理</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+    .custom-border { border: 1px solid #444; }
+  </style>
+</head>
+<body class="bg-[#121212] text-white p-6">
+
+  <script>
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+      window.location.href = "login.html"; // ログインページへリダイレクト
+    }
+    function logout() {
+      localStorage.removeItem("adminLoggedIn");
+    }
+  </script>
+
+<div class="max-w-6xl mx-auto space-y-10">
+<h1 class="text-2xl font-bold">売上管理</h1>
+<!-- 年間売上 -->
+<section class="bg-[#1A1A1A] p-4 rounded custom-border">
+<h2 class="text-xl font-semibold mb-2">年間売上</h2>
+<p class="text-2xl text-green-400 font-bold">¥1,230,000</p>
+</section>
+<!-- 月別売上（グラフ） -->
+<section class="bg-[#1A1A1A] p-4 rounded custom-border">
+<h2 class="text-xl font-semibold mb-4">月別売上</h2>
+<canvas class="w-full max-w-3xl" id="monthlySalesChart"></canvas>
+</section>
+<!-- 月別プラン別売上 -->
+<section class="bg-[#1A1A1A] p-4 rounded custom-border">
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-xl font-semibold">月別プラン別売上</h2>
+<select class="bg-[#2A2A2A] text-white p-2 rounded border border-[#444]" id="monthSelect" onchange="updatePlanTable()">
+<option value="2025-04">2025年4月</option>
+<option value="2025-03">2025年3月</option>
+</select>
+</div>
+<table class="w-full text-sm text-left">
+<thead class="text-gray-300 border-b border-[#444]">
+<tr>
+<th class="py-2 pr-4">プラン</th>
+<th class="py-2 pr-4">件数</th>
+<th class="py-2 pr-4">売上</th>
+</tr>
+</thead>
+<tbody id="planSalesBody">
+<tr class="border-t border-[#444]">
+<td class="py-2 pr-4">プレミアム</td>
+<td class="py-2 pr-4">10件</td>
+<td class="py-2 pr-4">¥298,000</td>
+</tr>
+<tr class="border-t border-[#444]">
+<td class="py-2 pr-4">スタンダード</td>
+<td class="py-2 pr-4">20件</td>
+<td class="py-2 pr-4">¥296,000</td>
+</tr>
+<tr class="border-t border-[#444]">
+<td class="py-2 pr-4">ライト</td>
+<td class="py-2 pr-4">25件</td>
+<td class="py-2 pr-4">¥245,000</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-[#1A1A1A] p-4 rounded custom-border">
+<h2 class="text-lg text-gray-300">合計ユーザー数</h2>
+<p class="text-2xl text-green-400 font-bold">380人</p>
+</div>
+<div class="bg-[#1A1A1A] p-4 rounded custom-border">
+<h2 class="text-lg text-gray-300">プレミアム</h2>
+<p class="text-2xl font-bold text-yellow-300">100人</p>
+</div>
+<div class="bg-[#1A1A1A] p-4 rounded custom-border">
+<h2 class="text-lg text-gray-300">スタンダード</h2>
+<p class="text-2xl font-bold text-gray-200">130人</p>
+</div>
+<div class="bg-[#1A1A1A] p-4 rounded custom-border">
+<h2 class="text-lg text-gray-300">ライト</h2>
+<p class="text-2xl font-bold text-orange-300">150人</p>
+</div>
+</section><section class="bg-[#1A1A1A] p-6 rounded custom-border mt-6">
+<h2 class="text-xl font-semibold mb-4">月別ユーザー数（合計＋プラン別）</h2>
+<canvas class="w-full max-w-4xl" id="userChart"></canvas>
+</section></div>
+<script>
+    const ctx = document.getElementById('monthlySalesChart').getContext('2d');
+    const monthlySalesChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+        datasets: [{
+          label: '売上（¥）',
+          data: [80000, 95000, 110000, 125000, 130000, 128000, 140000, 138000, 134000, 136000, 145000, 148000],
+          borderColor: '#4ade80',
+          borderWidth: 2,
+          tension: 0.3
+        }]
+      },
+      options: {
+        scales: {
+          y: {
+            ticks: { color: '#ccc' },
+            grid: { color: '#333' }
+          },
+          x: {
+            ticks: { color: '#ccc' },
+            grid: { color: '#333' }
+          }
+        },
+        plugins: {
+          legend: {
+            position: 'top',
+            align: 'end',
+            labels: {
+              color: '#fff',
+              usePointStyle: true,
+              pointStyle: 'circle',
+              pointStyleWidth: 10,  // ★ Chart.js 4.4.0以降で使える可能性あり（非標準）
+              boxWidth: 10,        // ✅ 丸のサイズ横幅
+              boxHeight: 7,        // ✅ 丸のサイズ高さ（必要な場合） 
+              padding: 10,
+              font: {
+                size: 13,
+                weight: 'bold',
+                family: 'sans-serif'
+              }
+            }
+          }
+        }
+      }
+    });
+
+    function updatePlanTable() {
+      const month = document.getElementById("monthSelect").value;
+      const tbody = document.getElementById("planSalesBody");
+      tbody.innerHTML = ""; // clear
+
+      let plans = {
+        "2025-04": [
+          ["プレミアム", 10, 298000],
+          ["スタンダード", 20, 296000],
+          ["ライト", 25, 245000],
+        ],
+        "2025-03": [
+          ["プレミアム", 8, 238000],
+          ["スタンダード", 18, 266000],
+          ["ライト", 22, 215000],
+        ]
+      };
+
+      plans[month].forEach(plan => {
+        const row = `<tr class="border-t border-[#444]">
+          <td class="py-2 pr-4">${plan[0]}</td>
+          <td class="py-2 pr-4">${plan[1]}件</td>
+          <td class="py-2 pr-4">¥${plan[2].toLocaleString()}</td>
+        </tr>`;
+        tbody.innerHTML += row;
+      });
+    }
+  </script>
+<script src="https://cdn.tailwindcss.com"></script><script>
+document.addEventListener("DOMContentLoaded", function () {
+  const ctx = document.getElementById('userChart');
+  if (!ctx) return;
+
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'],
+      datasets: [
+        {
+          label: '合計ユーザー数',
+          data: [280, 290, 300, 310, 320, 330, 340, 350, 360, 365, 370, 380],
+          borderColor: '#4ade80',
+          borderWidth: 2,
+          tension: 0.3
+        },
+        {
+          label: 'プレミアム',
+          data: [60, 65, 70, 72, 75, 80, 82, 85, 90, 95, 98, 100],
+          borderColor: '#facc15',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          tension: 0.3
+        },
+        {
+          label: 'スタンダード',
+          data: [90, 95, 100, 105, 110, 115, 120, 122, 124, 126, 128, 130],
+          borderColor: '#a3a3a3',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          tension: 0.3
+        },
+        {
+          label: 'ライト',
+          data: [130, 130, 130, 133, 135, 135, 138, 140, 145, 145, 144, 150],
+          borderColor: '#fb923c',
+          borderDash: [5, 5],
+          borderWidth: 2,
+          tension: 0.3
+        }
+      ]
+    },
+    options: {
+      scales: {
+        y: {
+          ticks: { color: '#ccc' },
+          grid: { color: '#333' }
+        },
+        x: {
+          ticks: { color: '#ccc' },
+          grid: { color: '#333' }
+        }
+      },
+      plugins: {
+        legend: {
+          position: 'top',
+          align: 'end',
+          labels: {
+            color: '#fff',
+            usePointStyle: true,
+            pointStyle: 'circle',
+            pointStyleWidth: 10,  // ★ Chart.js 4.4.0以降で使える可能性あり（非標準）
+            boxWidth: 10,        // ✅ 丸のサイズ横幅
+            boxHeight: 7,        // ✅ 丸のサイズ高さ（必要な場合） 
+            padding: 10,
+            font: {
+              size: 14,
+              weight: 'bold',
+              family: 'sans-serif'
+            }
+          }
+        }
+      }
+    }
+  });
+});
+</script></body>
+</html>

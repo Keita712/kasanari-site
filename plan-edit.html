@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KASANARI - プラン変更</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    .plan-card {
+      aspect-ratio: 1.414 / 1; /* 白銀比 */
+      border: 1px solid #ffffff55;
+      border-radius: 1rem;
+      transition: transform 0.3s ease, border-color 0.3s ease;
+    }
+    .plan-card:hover {
+      transform: scale(1.02);
+      border-color: #ffffffaa;
+    }
+    .plan-card.selected {
+    border-color: #ffffffaa !important;
+    transform: scale(1.02);
+    background-color: #1a1a1a;
+    }
+    .plan-name {
+      color: white;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+<section class="px-6 py-10">
+<h2 class="text-2xl font-semibold mb-8">プランの変更・解約</h2>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="plan-card p-6 flex flex-col justify-between">
+<div>
+<h3 class="plan-name text-xl mb-2">◆ Premium ◆</h3>
+<p class="text-sm text-gray-300">全映像＋月1本カスタム＋ロゴ演出＋リアルタイム対応</p>
+</div>
+<p class="text-sm text-gray-500 mt-4">¥29,800/月（税別）</p>
+</div>
+<div class="plan-card p-6 flex flex-col justify-between">
+<div>
+<h3 class="plan-name text-xl mb-2">◆ Standard ◆</h3>
+<p class="text-sm text-gray-300">映像10本、自動切替・季節テーマ付</p>
+</div>
+<p class="text-sm text-gray-500 mt-4">¥14,800/月（税別）</p>
+</div>
+<div class="plan-card p-6 flex flex-col justify-between">
+<div>
+<h3 class="plan-name text-xl mb-2">◆ Light ◆</h3>
+<p class="text-sm text-gray-300">映像5本、月替わり</p>
+</div>
+<p class="text-sm text-gray-500 mt-4">¥9,800/月（税別）</p>
+</div>
+</div>
+<div class="mt-10 flex flex-wrap gap-4">
+<button class="bg-white text-black px-3 py-2 rounded hover:bg-gray-200 transition" onclick="showConfirmation('change')">プランを変更する</button>
+<button class="border border-red-500 text-red-500 px-3 py-2 rounded hover:bg-red-500 hover:text-white transition" onclick="showConfirmation('cancel')">解約する</button>
+</div>
+</section>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const cards = document.querySelectorAll(".plan-card");
+    cards.forEach(card => {
+      card.addEventListener("click", () => {
+        cards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+      });
+    });
+  });
+
+  function showConfirmation(action) {
+    const confirmed = confirm(action === 'cancel' ? 'プランを解約してよろしいですか？' : 'プランを変更してよろしいですか？');
+    if (confirmed) {
+      window.location.href = action === 'cancel' ? '/cancel' : '/plan-change-complete';
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const cards = document.querySelectorAll(".plan-card");
+    cards.forEach(card => {
+      card.addEventListener("click", () => {
+        cards.forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+        const planName = card.querySelector(".plan-name").textContent;
+        localStorage.setItem("selected_plan_display", planName);
+      });
+    });
+  });
+
+  function showConfirmation(action) {
+    const confirmed = confirm(action === 'cancel'
+      ? 'プランを解約してよろしいですか？'
+      : 'プランを変更してよろしいですか？');
+
+    if (confirmed) {
+      if (action === 'change') {
+        const selectedCard = document.querySelector('.plan-card.selected');
+        if (selectedCard) {
+          let planName = selectedCard.querySelector('.plan-name').textContent.trim();
+          planName = planName.replace(/◆/g, '').trim(); // ◆を除去！
+
+          const users = JSON.parse(localStorage.getItem('users') || "[]");
+          const currentUserEmail = localStorage.getItem('currentUser');
+          const userIndex = users.findIndex(u => u.email === currentUserEmail);
+
+          if (userIndex !== -1) {
+            users[userIndex].plan = planName;
+            localStorage.setItem('users', JSON.stringify(users));
+            localStorage.setItem('currentPlan', planName);
+          }
+        }
+     }
+
+    window.location.href = action === 'cancel'
+      ? '/cancel'
+      : '/plan-change-complete';
+  }
+}
+
+
+  //該当するユーザーオブジェクトのplanを書き換える
+  //「プランを選んで保存する」ボタンを押下したら即localStorageに保存する
+  function savePlanChange() {
+  const selectedPlan = document.querySelector('input[name="plan"]:checked').value; // 選ばれたプラン
+  const currentUserEmail = localStorage.getItem('currentUser'); // 今ログインしているユーザーのemail
+
+  let users = JSON.parse(localStorage.getItem('users') || "[]");
+
+  const userIndex = users.findIndex(u => u.email === currentUserEmail);
+  if (userIndex !== -1) {
+    users[userIndex].plan = selectedPlan; // プランを更新
+    localStorage.setItem('users', JSON.stringify(users));
+  
+    // NASに保存（plan名をPOST）
+    fetch('http://192.168.11.18:3000/api/userinfo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({
+        plan: selectedPlan
+      })
+    });
+  
+    alert('プランを変更しました！');
+  } else {
+    alert('ユーザー情報が見つかりませんでした。');
+  }
+
+
+  return true; // フォーム送信または遷移OK
+}
+
+//  document.addEventListener("DOMContentLoaded", function () {
+//    const currentUser = localStorage.getItem("currentUser");
+//    if (!currentUser) {
+//      alert("ログインが必要です。");
+//      window.location.href = "login.html";
+//    }
+//  });
+</script>
+</body>
+</html>

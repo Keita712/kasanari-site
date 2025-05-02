@@ -1,0 +1,282 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KASANARI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    .plan-card {
+      aspect-ratio: 1.414 / 1;
+      border: 2px solid transparent;
+      border-radius: 1rem;
+      background-color: #111;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+    .plan-card:hover, .plan-card input:checked + div {
+      border-color: #ffffffcc;
+      background-color: #1a1a1a;
+      transform: scale(1.02);
+    }
+    .plan-name {
+      color: white;
+      font-weight: bold;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      background-color: #666;
+    }
+    .dot.active {
+      background-color: #fff;
+    }
+    .bar {
+      height: 2px;
+      background-color: #444;
+      flex: 0.8;
+      margin-bottom: 22px;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .label {
+      font-size: 10px;
+      color: #aaa;
+      margin-top: 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="min-h-screen px-6 py-10">
+<!-- ステップバー -->
+<section class="max-w-md mx-auto mb-8">
+<div class="flex items-center justify-between">
+<div class="step">
+<div class="dot active"></div>
+<div class="label">登録</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">プラン</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">支払い</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">確認</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">完了</div>
+</div>
+</div>
+</section>
+<h2 class="text-2xl font-semibold mb-8 text-center">新規ユーザー登録</h2>
+<form action="plan-select.html" class="max-w-xl mx-auto space-y-6" method="GET" onsubmit="return registerUser();">
+<div>
+<label class="block text-sm mb-1">店舗名 <span class="text-red-500">*</span></label>
+<input class="w-full px-4 py-2 bg-[#1a1a1a] border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-white" id="store_name" name="store_name" required="" type="text"/><span class="text-red-500 text-sm hidden" id="store_name_error"></span>
+</div>
+<div>
+<label class="block text-sm mb-1">店舗住所 <span class="text-red-500">*</span></label>
+<input class="w-full px-4 py-2 bg-[#1a1a1a] border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-white" id="store_address" name="store_address" required="" type="text"/><span class="text-red-500 text-sm hidden" id="store_address_error"></span>
+</div>
+<div>
+<label class="block text-sm mb-1">業種 <span class="text-red-500">*</span></label>
+<select class="w-full px-4 py-2 bg-[#1a1a1a] border border-gray-600 rounded" id="industry" name="industry" required="">
+<option disabled="" selected="" value="">選択してください</option>
+<option>カフェ</option>
+<option>バー</option>
+<option>居酒屋</option>
+<option>レストラン</option>
+<option>美容室</option>
+<option>その他</option>
+</select><span class="text-red-500 text-sm hidden" id="industry_error"></span>
+</div>
+<div>
+<label class="block text-sm mb-1">担当者名 <span class="text-red-500">*</span></label>
+<input class="w-full px-4 py-2 bg-[#1a1a1a] border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-white" id="manager_name" name="manager_name" required="" type="text"/><span class="text-red-500 text-sm hidden" id="manager_name_error"></span>
+</div>
+<div>
+<label class="block text-sm mb-1">メールアドレス <span class="text-red-500">*</span></label>
+<input class="w-full px-4 py-2 bg-[#1a1a1a] border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-white" id="email" name="email" required="" type="email"/><span class="text-red-500 text-sm hidden" id="email_error"></span>
+</div>
+<div>
+<label class="block text-sm mb-1">パスワード <span class="text-red-500">*</span></label>
+<input class="w-full px-4 py-2 bg-[#1a1a1a] border border-gray-600 rounded focus:outline-none focus:ring-2 focus:ring-white" id="password" name="password" required="" type="password"/><span class="text-red-500 text-sm hidden" id="password_error"></span>
+</div>
+<div class="text-center">
+<button class="bg-white text-black px-6 py-2 rounded hover:bg-gray-200 transition opacity-50 cursor-not-allowed" disabled="disabled" id="submitBtn" type="submit">登録してプラン選択へ</button>
+</div>
+</form>
+<script>
+function saveRegisterInfo() {
+  localStorage.setItem('store_name', document.getElementById('store_name').value);
+  localStorage.setItem('store_address', document.getElementById('store_address').value);
+  localStorage.setItem('industry', document.getElementById('industry').value);
+  localStorage.setItem('manager_name', document.getElementById('manager_name').value);
+  localStorage.setItem('email', document.getElementById('email').value);
+}
+</script>
+<script>
+function encode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function showError(inputId, message) {
+  const error = document.getElementById(inputId + "_error");
+  const input = document.getElementById(inputId);
+  error.textContent = message;
+  error.classList.remove("hidden");
+  input.classList.add("border-red-500");
+  input.classList.remove("border-gray-300");
+}
+
+function clearError(inputId) {
+  const error = document.getElementById(inputId + "_error");
+  const input = document.getElementById(inputId);
+  error.textContent = "";
+  error.classList.add("hidden");
+  input.classList.remove("border-red-500");
+  input.classList.add("border-gray-300");
+}
+
+function validateForm(showMessages = false) {
+  let isValid = true;
+
+  const fields = [
+    { id: "store_name", label: "店舗名" },
+    { id: "store_address", label: "店舗住所" },
+    { id: "industry", label: "業種" },
+    { id: "manager_name", label: "担当者名" },
+    { id: "email", label: "メールアドレス" },
+    { id: "password", label: "パスワード" }
+  ];
+
+  fields.forEach(field => {
+    const input = document.getElementById(field.id);
+    if (!input.value.trim() || input.value === "選択してください") {
+      if (showMessages) showError(field.id, field.label + "を入力してください。");
+      isValid = false;
+    } else {
+      clearError(field.id);
+    }
+  });
+
+  const email = document.getElementById("email");
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (email.value.trim() && !emailRegex.test(email.value)) {
+    if (showMessages) showError("email", "有効なメールアドレスを入力してください。");
+    isValid = false;
+  }
+
+  const password = document.getElementById("password");
+  if (password.value && password.value.length < 6) {
+    if (showMessages) showError("password", "パスワードは6文字以上で入力してください。");
+    isValid = false;
+  }
+
+  const submit = document.getElementById("submitBtn");
+  submit.disabled = !isValid;
+  submit.classList.toggle("opacity-50", !isValid);
+  submit.classList.toggle("cursor-not-allowed", !isValid);
+
+  return isValid;
+}
+
+function registerUser() {
+  if (!validateForm(true)) return false;
+
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const store_name = document.getElementById("store_name").value.trim();
+  const store_address = document.getElementById("store_address").value.trim();
+  const industry = document.getElementById("industry").value.trim();
+  const manager_name = document.getElementById("manager_name").value.trim();
+
+  const newUser = {
+    email: email,
+    password: encode(password),
+    store_name: store_name,
+    store_address: store_address,
+    industry: industry,
+    manager_name: manager_name
+  };
+
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const exists = users.find(u => u.email === email);
+  if (exists) {
+    alert("このユーザーはすでにアカウント登録済みです。\nログインページよりログインください。");
+    return false;
+  }
+
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("email", email);
+  localStorage.setItem("password", encode(password));
+  localStorage.setItem("store_name", store_name);
+  localStorage.setItem("store_address", store_address);
+  localStorage.setItem("industry", industry);
+  localStorage.setItem("manager_name", manager_name);
+  localStorage.setItem("currentUser", email);
+  
+  // ✅ NASにCookieセットしてAPI認証可能に
+  fetch('/.netlify/functions/setuserid/' + encodeURIComponent(email), {
+  method: 'GET',
+  credentials: 'include',
+});
+
+
+
+  if (!exists) {
+    users.push({
+      email: email,
+      password: encode(password),
+      store_name,
+      store_address,
+      industry,
+      manager_name,
+      plan: "" // 後で選択されるので空でOK
+    });
+    localStorage.setItem("users", JSON.stringify(users)); // ✅ 必ず最後に1回だけ保存
+  }
+
+  // NAS APIに初期登録情報を保存（localStorageから取得してPOST）
+  fetch('/.netlify/functions/userinfo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      storeName: store_name,
+      storeAddress: store_address,
+      industry: industry,
+      managerName: manager_name,
+      email: email
+    })
+  });
+
+  return true;
+}
+</script><script>
+document.querySelectorAll("input, select").forEach(input => {
+  input.addEventListener("input", () => validateForm(false));
+});
+</script></body></html>

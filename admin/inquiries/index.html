@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>お問い合わせ一覧 - KASANARI 管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .custom-border { border: 1px solid #444; }
+    .sortable:hover { text-decoration: underline; cursor: pointer; opacity: 0.8; }
+  </style>
+</head>
+<body class="bg-[#121212] text-white min-h-screen p-6">
+
+  <script>
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+      window.location.href = "login.html"; // ログインページへリダイレクト
+    }
+    function logout() {
+      localStorage.removeItem("adminLoggedIn");
+    }
+  </script>
+
+  <div class="max-w-6xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">お問い合わせ一覧</h1>
+    <table class="w-full table-auto bg-[#1A1A1A] text-left custom-border rounded overflow-hidden" id="inquiryTable">
+      <thead class="bg-[#2A2A2A] text-gray-300">
+        <tr>
+          <th class="px-4 py-2 custom-border sortable" onclick="sortTable(0)">送信者名</th>
+          <th class="px-4 py-2 custom-border sortable" onclick="sortTable(1)">メールアドレス</th>
+          <th class="px-4 py-2 custom-border sortable" onclick="sortTable(2)">お問い合わせ内容</th>
+          <th class="px-4 py-2 custom-border sortable" onclick="sortTable(3)">送信日時</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hover:bg-[#2A2A2A] transition-colors">
+          <td class="px-4 py-2 custom-border">山田 太郎</td>
+          <td class="px-4 py-2 custom-border">taro@example.com</td>
+          <td class="px-4 py-2 custom-border">サービスに関する質問です。</td>
+          <td class="px-4 py-2 custom-border">2025-04-19 10:15</td>
+        </tr>
+        <tr class="hover:bg-[#2A2A2A] transition-colors">
+          <td class="px-4 py-2 custom-border">佐藤 花子</td>
+          <td class="px-4 py-2 custom-border">hanako@example.com</td>
+          <td class="px-4 py-2 custom-border">ログインできません。</td>
+          <td class="px-4 py-2 custom-border">2025-04-18 18:42</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    function sortTable(n) {
+      const table = document.getElementById("inquiryTable");
+      let switching = true, dir = "asc", switchcount = 0;
+      while (switching) {
+        switching = false;
+        const rows = table.rows;
+        for (let i = 1; i < rows.length - 1; i++) {
+          let shouldSwitch = false;
+          let x = rows[i].getElementsByTagName("TD")[n];
+          let y = rows[i + 1].getElementsByTagName("TD")[n];
+          if (dir === "asc") {
+            if (x.innerText.toLowerCase() > y.innerText.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          } else if (dir === "desc") {
+            if (x.innerText.toLowerCase() < y.innerText.toLowerCase()) {
+              shouldSwitch = true;
+              break;
+            }
+          }
+        }
+        if (shouldSwitch) {
+          rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+          switching = true;
+          switchcount++;
+        } else {
+          if (switchcount === 0 && dir === "asc") {
+            dir = "desc";
+            switching = true;
+          }
+        }
+      }
+    }
+  </script>
+</body>
+</html>

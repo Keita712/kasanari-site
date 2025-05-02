@@ -1,0 +1,258 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>KASANARI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer="" src="https://unpkg.com/alpinejs"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&amp;display=swap" rel="stylesheet"/>
+  <style>
+    body { font-family: 'Noto Sans JP', sans-serif; }
+    .fade-bg { background: linear-gradient(to bottom, rgba(0,0,0,0), rgba(0,0,0,0.85)); }
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    }
+    .fade-in.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .form-input {
+      background-color: #1a1a1a;
+      border: 1px solid #444;
+      color: white;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: white;
+      box-shadow: 0 0 0 1px white;
+    }
+    .fade-step {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeStep 1.5s ease-out forwards;
+    }
+    .fade-line {
+     opacity: 0;
+      transform: scaleX(0);
+      animation: fadeLine 1.3s ease-out forwards;
+    }
+    @keyframes fadeStep {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+     }
+    }
+    @keyframes fadeLine {
+      to {
+        opacity: 1;
+        transform: scaleX(1);
+     }
+    }
+  </style>
+</head>
+<body class="bg-black text-white">
+<header class="absolute top-4 left-4 z-50 text-sm font-bold tracking-wide text-white rounded">
+<!-- 左ロゴ＋テキスト -->
+<div class="flex items-center space-x-2 select-none pointer-events-none">
+  <img src="assets/2.png" alt="KASANARI ロゴ" class="h-8 pointer-events-none">
+  <span class="text font-bold">KASANARI</span>
+</div>
+</header>
+
+<div class="absolute top-4 right-4 z-50 flex items-center space-x-4">
+  <a href="/admin/dashboard.html" 
+    class="text-sm font-semibold text-white border border-white px-4 py-1 rounded opacity-0 hover:opacity-40 transition duration-300 pointer-events-auto">
+    管理者
+  </a>
+  <a class="text-sm font-semibold text-white border border-white px-4 py-1 rounded hover:bg-white hover:text-black transition" href="/login">ログイン</a>
+</div>
+
+<!-- ファーストビュー -->
+<section class="relative h-screen w-full overflow-hidden fade-in">
+  <video autoplay="" class="absolute top-0 left-0 w-full h-full object-cover z-0" id="bgVideo" loop="" muted="" playsinline="">
+   <source src="your-video.mp4" type="video/mp4"/>
+  </video>
+  <div class="absolute bottom-0 left-0 w-full h-1/2 fade-bg z-10"></div>
+  <div class="relative z-20 flex flex-col justify-center items-center text-center h-full px-4 bg-black/40">
+    <h1 class="text-2xl sm:text-3xl md:text-5xl font-bold fade-in max-w-3xl">
+      光・音・空間・感情——<br>KASANARIがすべてを繋ぐ。
+    </h1>
+    <p class="mt-4 text-base sm:text-lg md:text-xl fade-in max-w-xl">
+      音楽に反応し、心を動かす映像演出が、今、<br>あなたの店に。
+    </p>
+    <div class="mt-8 flex flex-col sm:flex-row gap-4 justify-center fade-in">
+     <a class="bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition text-center" href="#plans">プランを見る</a>
+     <a class="border border-white px-6 py-2 rounded-full font-semibold hover:bg-white hover:text-black transition text-center" href="/register">無料で始める</a>
+    </div>
+  </div>
+</section>
+
+<!-- KASANARIとは -->
+<section class="py-24 px-6 text-center fade-in">
+  <h2 class="text-2xl md:text-3xl font-bold mb-4">KASANARIとは？</h2>
+     <p class="max-w-2xl mx-auto text-gray-300 text-base sm:text-lg">
+       空間と調和し、呼吸するように存在する映像。音楽と映像が融合する、新しい店舗演出体験です。
+     </p>
+</section>
+
+<!-- 選ばれる理由 -->
+<section class="py-24 px-6 bg-gray-300 text-center fade-in" style="background-color: #1a1a1a;">
+    <h2 class="text-2xl md:text-3xl font-bold mb-10">選ばれる理由</h2>
+  <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 text-left">
+    <div class="fade-in">
+      <h3 class="text-xl font-semibold mb-2">高品質なアート</h3>
+      <p class="text-gray-300">プロ仕様のTouchDesigner映像で店舗空間を彩ります。</p>
+    </div>
+    <div class="fade-in">
+      <h3 class="text-xl font-semibold mb-2">リアルタイム連動</h3>
+      <p class="text-gray-300">店舗で流す音楽と映像が完全にシンクロします。</p>
+    </div>
+    <div class="fade-in">
+      <h3 class="text-xl font-semibold mb-2">簡単な導入と操作</h3>
+      <p class="text-gray-300">専用端末とWeb操作で誰でも簡単に使えます。</p>
+    </div>
+  </div>
+</section>
+
+<!-- 料金プラン -->
+<section class="py-24 px-6 text-center fade-in" id="plans">
+    <h2 class="text-2xl md:text-3xl font-bold mb-10">料金プラン</h2>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+  <div class="border border-white rounded-xl p-6 bg-black/40 fade-in">
+    <h3 class="text-xl font-bold mb-2">Light</h3>
+    <p class="text-lg mb-4">¥9,800/月（税別）</p>
+    <ul class="text-gray-300 space-y-1 text-sm sm:text-base">
+      <li>映像5本</li>
+      <li>月替わり更新</li>
+      <li>初月無料</li>
+    </ul>
+  </div>
+  <div class="border border-white rounded-xl p-6 bg-black/40 fade-in">
+    <h3 class="text-xl font-bold mb-2">Standard</h3>
+    <p class="text-lg mb-4">¥14,800/月（税別）</p>
+    <ul class="text-gray-300 space-y-1 text-sm sm:text-base">
+      <li>映像10本</li>
+      <li>自動切替＋季節テーマ</li>
+      <li>初月無料</li>
+    </ul>
+  </div>
+  <div class="border border-white rounded-xl p-6 bg-black/40 fade-in">
+    <h3 class="text-xl font-bold mb-2">Premium</h3>
+    <p class="text-lg mb-4">¥29,800/月（税別）</p>
+    <ul class="text-gray-300 space-y-1 text-sm sm:text-base">
+      <li>全映像＋月1本カスタム</li>
+      <li>ロゴ演出・リアルタイム対応</li>
+      <li>初月無料</li>
+    </ul>
+  </div>
+  </div>
+</section>
+
+<!-- 新しい導入の流れ -->
+<!-- モダンな導入の流れセクション -->
+<section class="py-24 px-6 text-center bg-gray-900 fade-in" id="start" style="background-color: #1a1a1a;">
+  <h2 class="text-2xl md:text-3xl font-bold mb-16">導入の流れ</h2>
+  <div class="relative flex flex-col sm:flex-row items-center justify-center gap-10 max-w-5xl mx-auto">
+    <div class="flex flex-col items-center fade-step" style="animation-delay: 0.0s">
+      <div class="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center text-lg font-bold shadow-lg">1</div>
+      <p class="mt-3 text-sm sm:text-base text-white">アカウント作成</p>
+    </div><div class="hidden sm:block h-1 bg-white fade-line" style="width: 40px; animation-delay: 0.1s"></div>
+    <div class="flex flex-col items-center fade-step" style="animation-delay: 0.3s">
+      <div class="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center text-lg font-bold shadow-lg">2</div>
+      <p class="mt-3 text-sm sm:text-base text-white">プラン選択</p>
+    </div><div class="hidden sm:block h-1 bg-white fade-line" style="width: 40px; animation-delay: 0.4s"></div>
+    <div class="flex flex-col items-center fade-step" style="animation-delay: 0.6s">
+      <div class="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center text-lg font-bold shadow-lg">3</div>
+      <p class="mt-3 text-sm sm:text-base text-white">映像選択</p>
+    </div><div class="hidden sm:block h-1 bg-white fade-line" style="width: 40px; animation-delay: 0.8s"></div>
+    <div class="flex flex-col items-center fade-step" style="animation-delay: 0.8999999999999999s">
+      <div class="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center text-lg font-bold shadow-lg">4</div>
+      <p class="mt-3 text-sm sm:text-base text-white">自動再生</p>
+    </div>
+  </div>
+</section>
+
+<!-- サンプル動画 -->
+<section class="py-24 px-6 text-center fade-in">
+  <h2 class="text-2xl md:text-3xl font-bold mb-10">サンプル映像</h2>
+  <div class="flex flex-wrap justify-center gap-6">
+    <video class="w-full sm:w-80 rounded-lg border border-white" controls="" src="sample1.mp4"></video>
+    <video class="w-full sm:w-80 rounded-lg border border-white" controls="" src="sample2.mp4"></video>
+    <video class="w-full sm:w-80 rounded-lg border border-white" controls="" src="sample3.mp4"></video>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="py-24 px-6 text-center bg-gray-900 fade-in" style="background-color: #1a1a1a;">
+  <h2 class="text-2xl md:text-3xl font-bold mb-10">よくある質問</h2>
+  <div class="max-w-3xl mx-auto text-left text-white space-y-6">
+    <div>
+      <h3 class="font-semibold">Q. 導入には何が必要ですか？</h3>
+      <p class="text-gray-300">インターネット環境とモニターがあればすぐに始められます。</p>
+    </div>
+    <div>
+      <h3 class="font-semibold">Q. 音楽との連動は自動ですか？</h3>
+      <p class="text-gray-300">はい、専用端末が音に反応して映像を自動生成します。</p>
+    </div>
+  </div>
+</section>
+
+<!-- お問い合わせ -->
+<section class="py-24 px-6 text-center fade-in">
+  <h2 class="text-2xl md:text-3xl font-bold mb-10">お問い合わせ</h2>
+  <form action="/contact-complete" class="max-w-xl mx-auto space-y-6 text-left">
+  <div>
+    <label class="block mb-2 text-sm">お名前</label>
+    <input required class="form-input w-full px-4 py-2 rounded"/>
+  </div>
+  <div>
+    <label class="block mb-2 text-sm">メールアドレス</label>
+    <input type="email" name="email" required class="form-input w-full px-4 py-2 rounded" />
+  </div>
+  <div>
+    <label class="block mb-2 text-sm">お問い合わせ内容</label>
+    <textarea required class="form-input w-full px-4 py-2 rounded"></textarea>
+  </div>
+  <div class="text-center mt-6">
+    <button class="bg-white text-black px-6 py-2 rounded-full font-semibold hover:bg-gray-200 transition" type="submit">
+      送信
+    </button>
+  </div>
+  </form>
+</section>
+
+<script>
+  // 背景動画のフェードアウト
+  const bgVideo = document.getElementById('bgVideo');
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    const fadeStart = 0;
+    const fadeEnd = 400;
+    let opacity = 1;
+    if (y > fadeStart) {
+      opacity = 1 - (y - fadeStart) / (fadeEnd - fadeStart);
+      if (opacity < 0) opacity = 0;
+    }
+    bgVideo.style.opacity = opacity;
+  });
+
+  // スクロールでフェードイン
+  const fadeIns = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  fadeIns.forEach(el => observer.observe(el));
+</script>
+</body>
+</html>

@@ -1,0 +1,123 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ユーザー情報変更 - KASANARI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    input {
+      background-color: #1a1a1a;
+      border: 1px solid #444;
+      color: white;
+    }
+    input:focus {
+      outline: none;
+      border-color: white;
+      box-shadow: 0 0 0 1px white;
+    }
+  </style>
+</head>
+<body class="px-6 py-12">
+<section class="max-w-2xl mx-auto space-y-8">
+<h1 class="text-3xl font-bold mb-6">ユーザー情報の変更</h1>
+<form action="/edit-user-complete" class="space-y-6" method="GET" onsubmit="saveUserEdit(); return true;">
+<div>
+<label class="block text-sm mb-1">店舗名</label>
+<input class="w-full px-4 py-2 rounded" name="shop" required="" type="text" value="KASANARI Cafe Tokyo"/>
+</div>
+<div>
+<label class="block text-sm mb-1">店舗住所</label>
+<input class="w-full px-4 py-2 rounded" name="address" required="" type="text" value="東京都渋谷区桜丘町12-3"/>
+</div>
+<div>
+<label class="block text-sm mb-1">業種</label>
+<input class="w-full px-4 py-2 rounded" name="industry" required="" type="text" value="カフェ・飲食店"/>
+</div>
+<div>
+<label class="block text-sm mb-1">担当者名</label>
+<input class="w-full px-4 py-2 rounded" name="name" required="" type="text" value="山田 太郎"/>
+</div>
+<div>
+<label class="block text-sm mb-1">メールアドレス</label>
+<input class="w-full px-4 py-2 rounded" name="email" required="" type="email" value="info@example.com"/>
+</div>
+<div class="text-center pt-6">
+<button class="bg-white text-black px-6 py-2 rounded hover:bg-gray-200 transition" type="submit">
+          保存する
+        </button>
+</div>
+</form>
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelector('input[name="shop"]').value = localStorage.getItem('store_name') || '';
+  document.querySelector('input[name="address"]').value = localStorage.getItem('store_address') || '';
+  document.querySelector('input[name="industry"]').value = localStorage.getItem('industry') || '';
+  document.querySelector('input[name="name"]').value = localStorage.getItem('manager_name') || '';
+  document.querySelector('input[name="email"]').value = localStorage.getItem('email') || '';
+});
+
+function saveUserEdit() {
+  localStorage.setItem('store_name', document.querySelector('input[name="shop"]').value);
+  localStorage.setItem('store_address', document.querySelector('input[name="address"]').value);
+  localStorage.setItem('industry', document.querySelector('input[name="industry"]').value);
+  localStorage.setItem('manager_name', document.querySelector('input[name="name"]').value);
+  localStorage.setItem('email', document.querySelector('input[name="email"]').value);
+    // NASに同期保存
+  fetch('http://192.168.11.18:3000/api/userinfo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      storeName: localStorage.getItem('store_name'),
+      storeAddress: localStorage.getItem('store_address'),
+      industry: localStorage.getItem('industry'),
+      managerName: localStorage.getItem('manager_name')
+    })
+  });
+}
+
+function saveUserInfoChange() {
+  const storeName = document.getElementById('store_name').value.trim();
+  const storeAddress = document.getElementById('store_address').value.trim();
+  const industry = document.getElementById('industry').value.trim();
+  const managerName = document.getElementById('manager_name').value.trim();
+  const currentUserEmail = localStorage.getItem('currentUser');
+
+  let users = JSON.parse(localStorage.getItem('users') || "[]");
+
+  const userIndex = users.findIndex(u => u.email === currentUserEmail);
+  if (userIndex !== -1) {
+    users[userIndex].store_name = storeName;
+    users[userIndex].store_address = storeAddress;
+    users[userIndex].industry = industry;
+    users[userIndex].manager_name = managerName;
+    localStorage.setItem('users', JSON.stringify(users));
+    alert('ユーザー情報を変更しました！');
+  } else {
+    alert('ユーザー情報が見つかりませんでした。');
+  }
+
+  return true;
+}
+
+</script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser) {
+      alert("ログインが必要です。");
+      window.location.href = "login.html";
+    }
+  });
+</script>
+</body>
+</html>

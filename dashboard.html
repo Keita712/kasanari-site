@@ -1,0 +1,491 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KASANARI マイページ - Final Adjusted</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    .card-wrapper {
+      border-radius: 0.75rem;
+      overflow: hidden;
+      background-color: transparent;
+      transition: box-shadow 0.3s ease;
+      position: relative;
+    }
+    .card-wrapper:hover {
+      box-shadow: 0 0 25px rgba(255, 255, 255, 0.15);
+    }
+    .card-label {
+      background-color: #1a1a1a;
+    }
+    .card {
+      background-color: #1a1a1a;
+      border-radius: 0.75rem;
+    }
+    .heart {
+      position: absolute;
+      top: 0.5rem;
+      left: 0.5rem;
+      cursor: pointer;
+      stroke: white;
+      fill: none;
+      z-index: 10;
+    }
+    .heart.active {
+      fill: red;
+      stroke: red;
+    }
+    /* 再生後も拡大/PiPボタンを非表示 */
+    video::-webkit-media-controls-fullscreen-button,
+    video::-webkit-media-controls-picture-in-picture-button,
+    video::-webkit-media-controls-enclosure {
+      display: none !important;
+    }
+    video {
+      pointer-events: auto;
+    }
+    .hero-overlay::after {
+      content: "";
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 40%;
+      background: linear-gradient(to top, #000, transparent);
+      z-index: 1;
+    }
+    svg { stroke: white; stroke-width: 1.6; fill: none; }
+    .icon-button:hover svg { stroke: #ccc; transition: stroke 0.2s ease; }
+  </style>
+</head>
+<body class="min-h-screen overflow-x-hidden">
+<!-- ヘッダー -->
+<header class="w-full flex justify-between items-center px-6 py-4">
+<!-- 左ロゴ -->
+<div class="flex items-center space-x-2 select-none pointer-events-none">
+  <img src="assets/2.png" alt="KASANARI ロゴ" class="h-8 pointer-events-none">
+  <span class="text font-bold">KASANARI</span>
+</div>
+<!-- 右アイコン群 -->
+<div class="flex flex-col items-end space-y-1">
+<div class="flex gap-4 items-center">
+<div class="text-sm px-3 py-1 rounded border border-yellow-400 text-yellow-400" id="current-plan" style="cursor: default;">◆ Premium ◆</div>
+<!-- マイページ（黄金比SVG） -->
+<a class="icon-button" href="/user-info" title="マイページ">
+<svg class="w-8 h-8" viewbox="0 0 24 24">
+<circle cx="12" cy="8" r="4.236"></circle>
+<path d="M4.5 20c0-3.236 5.236-5.236 7.5-5.236s7.5 2 7.5 5.236"></path>
+</svg>
+</a>
+<!-- ログアウト（黄金比SVG） -->
+<button class="icon-button" id="logout-btn" title="ログアウト">
+<svg class="w-8 h-8" viewbox="0 0 24 24">
+<path d="M15 12H4"></path>
+<path d="M11 8l4 4-4 4"></path>
+<path d="M18 5v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+</svg>
+</button>
+</div>
+</div>
+</header>
+<!-- 今月のおすすめ（ヒーロー映像） -->
+<section class="relative h-[50vh] sm:h-[60vh] w-full overflow-hidden">
+<video autoplay="" class="absolute inset-0 w-full h-full object-cover z-0" loop="" muted="" playsinline="">
+<source src="hero-video.mp4" type="video/mp4"/>
+</video>
+<div class="hero-overlay absolute inset-0 z-10"></div>
+<div class="absolute bottom-10 left-6 right-6 max-w-xl z-20">
+<h2 class="text-3xl font-bold mb-2 leading-snug">今月のおすすめ：<br class="sm:hidden"/>幻想的な光の波</h2>
+<p class="text-sm text-gray-300 break-words leading-relaxed">空間と音が共鳴する、プレミアム限定の幻想映像を体験してください。</p>
+</div>
+</section>
+<!-- Line up -->
+<section class="px-6 mt-6 relative">
+<div class="flex space-x-2 items-center mb-4">
+<h2 class="text-xl font-semibold">Line up</h2>
+<button class="text-white text-sm" id="sort-toggle">▼</button>
+</div>
+<div class="bg-[#1a1a1a] rounded text-sm text-white absolute left-6 mt-0 w-100 hidden group-hover:block z-20 shadow-lg z-50" id="sort-menu">
+<ul>
+<li class="px-4 py-2 hover:bg-gray-700 cursor-pointer" data-sort="popular">人気順</li>
+<li class="px-4 py-2 hover:bg-gray-700 cursor-pointer" data-sort="favorite">お気に入り順</li>
+<li class="px-4 py-2 hover:bg-gray-700 cursor-pointer" data-sort="latest">更新日順</li>
+<li class="px-4 py-2 hover:bg-gray-700 cursor-pointer" data-sort="history">再生履歴順</li>
+</ul>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6" id="video-container">
+  <!-- ここには何も書かない（動的に動画カードを追加する） -->
+</div>
+
+</section>
+<!-- プラン -->
+<!-- お知らせ -->
+<section class="px-6 mt-16">
+<h3 class="text-xl font-semibold mb-3">お知らせ</h3>
+<div class="bg-[#1a1a1a] p-4 rounded border border-gray-500 max-h-48 overflow-y-auto text-sm text-white space-y-2 scroll-smooth">
+<a class="block hover:underline" href="news_detail.html">新映像「星降る庭」追加のお知らせ</a>
+<a class="block hover:underline" href="#">サーバーメンテナンスのお知らせ（5/18）</a>
+<a class="block hover:underline" href="#">アップデート：映像切替がよりスムーズになりました</a>
+<a class="block hover:underline" href="#">新プラン開始のお知らせ（ライトプラン対応）</a>
+<a class="block hover:underline" href="#">機能追加：お気に入り映像がソート可能になりました</a>
+<a class="block hover:underline" href="#">新映像「星降る庭」追加のお知らせ</a>
+<a class="block hover:underline" href="#">サーバーメンテナンスのお知らせ（5/18）</a>
+<a class="block hover:underline" href="#">アップデート：映像切替がよりスムーズになりました</a>
+<a class="block hover:underline" href="#">新プラン開始のお知らせ（ライトプラン対応）</a>
+<a class="block hover:underline" href="#">機能追加：お気に入り映像がソート可能になりました</a>
+</div>
+</section>
+<!-- 端末ガイド・サポート -->
+<section class="px-6 mt-12 space-y-6 pb-20">
+<a class="block text-white text-lg font-medium hover:underline" href="/device-guide">端末使用ガイド（Premium限定）</a>
+<a class="block text-white text-lg font-medium hover:underline" href="/faq">FAQ（サポート）</a>
+</section>
+<!-- モーダル -->
+<div class="fixed inset-0 bg-black bg-opacity-90 hidden justify-center items-center z-50" id="modal">
+<video autoplay="" class="max-w-4xl w-full h-auto rounded shadow-lg" controls="" id="modal-video"></video>
+</div>
+<div class="fixed inset-0 bg-black bg-opacity-80 hidden justify-center items-center z-50" id="logout-modal">
+<div class="bg-[#1a1a1a] p-6 rounded-lg text-center w-80">
+<p class="text-white mb-4">ログアウトしてよろしいですか？</p>
+<div class="flex justify-center gap-4">
+<button class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700" id="confirm-logout">はい</button>
+<button class="px-4 py-2 bg-gray-400 text-white rounded hover:bg-gray-500" id="cancel-logout">いいえ</button>
+</div>
+</div>
+</div>
+<script>
+
+function openModal(src) {
+  const modal = document.getElementById('video-modal');
+  const video = modal.querySelector('video');
+
+  video.src = src;
+  video.load();
+  
+  modal.classList.remove('hidden');
+
+  // モーダルが表示された後にフルスクリーンリクエスト
+  setTimeout(() => {
+    video.play();
+    if (video.requestFullscreen) {
+      video.requestFullscreen();
+    } else if (video.webkitRequestFullscreen) {
+      video.webkitRequestFullscreen();
+    } else if (video.msRequestFullscreen) {
+      video.msRequestFullscreen();
+    }
+  }, 50); // 少しだけ待つことで確実にフルスクリーンできる
+}
+
+
+  document.getElementById('modal').addEventListener('click', () => {
+    const modal = document.getElementById('modal');
+    const video = document.getElementById('modal-video');
+    video.pause();
+    video.src = "";
+    modal.classList.add('hidden');
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    }
+  });
+
+  document.querySelectorAll('#sort-menu li').forEach(item => {
+    item.addEventListener('click', () => {
+      const key = item.dataset.sort;
+  
+      if (key === currentSortKey) {
+        // 同じキー押したら昇順/降順切り替え
+        currentSortOrder = (currentSortOrder === 'desc') ? 'asc' : 'desc';
+      } else {
+        // 新しいキー押したらキー更新＋降順スタート
+        currentSortKey = key;
+        currentSortOrder = 'desc';
+      }
+  
+      sortAndRender();
+    });
+  });
+  
+  function sortAndRender() {
+    const cards = Array.from(document.querySelectorAll('#video-container .card-wrapper'));
+    const container = document.getElementById('video-container');
+  
+    const sorted = cards.sort((a, b) => {
+      let aValue, bValue;
+  
+      if (currentSortKey === 'latest') {
+        aValue = new Date(a.dataset.updated);
+        bValue = new Date(b.dataset.updated);
+      } else if (currentSortKey === 'popular') {
+        aValue = parseInt(a.dataset.popularity || 0);
+        bValue = parseInt(b.dataset.popularity || 0);
+      } else if (currentSortKey === 'favorite') {
+        aValue = a.classList.contains('favorite') ? 1 : 0;
+        bValue = b.classList.contains('favorite') ? 1 : 0;
+      } else if (currentSortKey === 'history') {
+        aValue = parseInt(a.dataset.history || 0);
+        bValue = parseInt(b.dataset.history || 0);
+      } else {
+        return 0;
+      }
+  
+      if (currentSortOrder === 'asc') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+  
+    container.innerHTML = "";
+    sorted.forEach(el => container.appendChild(el));
+  }
+
+
+  document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById("video-container");
+    let currentSortKey = 'latest';
+    let currentSortOrder = 'desc'; // desc=降順 / asc=昇順
+
+    //ソート処理
+    const toggle = document.getElementById("sort-toggle");
+    const menu = document.getElementById("sort-menu");
+
+    // ▼クリックでプルダウンの開閉
+    toggle.addEventListener("click", function (event) {
+      event.stopPropagation(); // 他のクリックイベントを止める
+      menu.classList.toggle("hidden");
+    });
+
+    // ドキュメント内の他の場所をクリックしたら非表示
+    document.addEventListener("click", function (event) {
+      if (!toggle.contains(event.target) && !menu.contains(event.target)) {
+        menu.classList.add("hidden");        
+      }
+    });
+    
+    //ログアウトボタン処理
+    const logoutBtn = document.getElementById("logout-btn");
+    const modal = document.getElementById("logout-modal");
+    const confirm = document.getElementById("confirm-logout");
+    const cancel = document.getElementById("cancel-logout");
+
+    const currentUserEmail = localStorage.getItem('currentUser');
+
+    // ✅ 先に currentUserEmail が null かチェック
+    if (!currentUserEmail) {
+      setTimeout(() => {
+        const retryUser = localStorage.getItem("currentUser");
+        if (!retryUser) {
+          alert("ログイン情報が見つかりません。ログインし直してください。");
+          window.location.href = "/register.html";
+        } else {
+          location.reload();
+        }
+      }, 300);
+      return;
+    }
+    
+    // ✅ チェックを通過したら users を読み込む
+    const currentUser = currentUserEmail;
+    const users = JSON.parse(localStorage.getItem('users')) || [];
+    const user = users.find(u => u.email === currentUserEmail);
+    
+    // ✅ user が null の場合も追加チェック
+    if (!user) {
+      alert("ユーザー情報が見つかりません。最初から登録をやり直してください。");
+      window.location.href = "/register.html";
+      return;
+    }
+    
+    // ✅ currentPlan 表示
+    let currentPlan = user.plan || "Light";
+    document.getElementById("current-plan").textContent = `◆ ${currentPlan} ◆`;
+    
+    // ★ ここでユーザーごとのfavorites取得！
+    const videos = JSON.parse(localStorage.getItem("videos")) || [];
+    const favoritesKey = `favorites_${currentUser}`;
+    const favorites = JSON.parse(localStorage.getItem(favoritesKey) || "[]");
+    
+    console.log("=== Debug: currentPlan ===", currentPlan);
+    console.log("=== Debug: currentUser ===", currentUser);
+    console.log("=== Debug: all videos ===", videos);
+
+    // fetch("http://192.168.11.18:3000/api/userinfo", { credentials: "include" })
+//       .then(res => res.json())
+//       .then(data => {
+//         if (data.favorites) {
+//           localStorage.setItem(favoritesKey, JSON.stringify(data.favorites));
+//         }
+// 
+//       if (data.favorites && Array.isArray(data.favorites)) {
+//         videos.sort((a, b) => {
+//           const aIdx = data.favorites.indexOf(a.id);
+//           const bIdx = data.favorites.indexOf(b.id);
+//           return (aIdx === -1 ? 9999 : aIdx) - (bIdx === -1 ? 9999 : bIdx);
+//         });
+      }
+    
+      render(); // ← 並び替えた順で描画される
+
+          // ✅ 視聴履歴・視聴カウントの送信
+    function trackView(videoId) {
+      fetch("http://192.168.11.18:3000/api/userinfo", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ view: videoId })
+      });
+    }
+      });
+
+    // ★ Lineup（filteredVideos）生成！
+    const filteredVideos = videos.filter(video => {
+      if (!video || !video.targetType || !video.target) return false;
+    
+      if (video.targetType === "plan") {
+        return Array.isArray(video.target) && video.target.includes(currentPlan);
+      } else if (video.targetType === "user") {
+        return video.target === currentUser;
+      }
+      return false;
+    });
+
+    filteredVideos.forEach(video => {
+      const card = document.createElement('div');
+      card.className = "card-wrapper group";
+      card.dataset.popularity = video.popularity || 0;
+      card.dataset.updated = video.date || "2024-01-01";
+    
+      // ✅ sampleFilenameの防衛（nullやundefinedでのお気に入り誤判定を防ぐ）
+      const videoId = video.id; // 例: "vid001"
+      if (!videoId || !video.sampleFilename) return;
+      
+      const isFavorite = favorites.includes(videoId);
+    
+      card.innerHTML = `
+        <svg class="heart w-6 h-6 ${isFavorite ? 'active' : ''}" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5
+                   2 5.42 4.42 3 7.5 3c1.74 0
+                   3.41 0.81 4.5 2.09C13.09 3.81
+                   14.76 3 16.5 3 19.58 3 22 5.42
+                   22 8.5c0 3.78-3.4 6.86-8.55
+                   11.54L12 21.35z"></path>
+        </svg>
+        <img src="/assets/videos/${video.sampleFilename.replace('.mp4', '.jpg')}" class="w-full h-40 object-cover preview" />
+        <video class="w-full h-40 object-cover hidden" muted loop playsinline preload="none">
+          <source src="/assets/videos/${video.sampleFilename}" type="video/mp4">
+        </video>
+        <div class="text-sm text-gray-200 card-label p-3 text-center cursor-pointer" onclick="openModal('/assets/videos/${video.mainFilename}')">
+          ${video.title}
+        </div>
+      `;
+    
+      // ✅ ハートのイベントを個別にバインド
+      const heart = card.querySelector('.heart');
+      heart.addEventListener('click', e => {
+        e.stopPropagation();
+        heart.classList.toggle('active');
+        card.classList.toggle('favorite');
+      
+        let updatedFavorites = JSON.parse(localStorage.getItem(favoritesKey) || "[]");
+      
+        if (heart.classList.contains('active')) {
+          if (!updatedFavorites.includes(videoId)) {
+            updatedFavorites.push(videoId);
+          }
+        } else {
+          updatedFavorites = updatedFavorites.filter(f => f !== videoId);
+        }
+      
+        localStorage.setItem(favoritesKey, JSON.stringify(updatedFavorites));
+       // ★NASにも保存（favorites）
+       fetch("http://192.168.11.18:3000/api/userinfo", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         credentials: "include",
+         body: JSON.stringify({
+           favorites: updatedFavorites
+         })
+       });
+     });
+      // ✅ 画像クリックで動画に切り替え
+      const previewImg = card.querySelector('.preview');
+      const videoEl = card.querySelector('video');
+      previewImg.addEventListener('click', e => {
+        previewImg.classList.add('hidden');
+        videoEl.classList.remove('hidden');
+        videoEl.play();
+      });
+    
+      container.appendChild(card);
+    });
+
+
+    //モーダル背景（黒）クリックで閉じる処理
+    document.getElementById('video-modal').addEventListener('click', function() {
+        const modal = document.getElementById('video-modal');
+        const video = modal.querySelector('video');
+        video.pause();
+        modal.classList.add('hidden');
+    });
+
+    // すべての動画に対してクリック時に再生/停止切り替え
+    container.querySelectorAll('video').forEach(video => {
+      video.addEventListener('click', function(event) {
+        event.stopPropagation();
+        if (this.paused) {
+          this.play();
+        } else {
+          this.pause();
+        }
+      });
+    });
+  
+    // ▼ ボタン押下でモーダル表示
+    logoutBtn.addEventListener("click", () => {
+      modal.classList.remove("hidden");
+      modal.classList.add("flex");
+    });
+
+    // いいえ → モーダルを閉じる
+    cancel.addEventListener("click", () => {
+      modal.classList.add("hidden");
+      modal.classList.remove("flex");
+    });
+
+    // はい → login.html に遷移
+    confirm.addEventListener("click", () => {
+      fetch("http://192.168.11.18:3000/api/logout", {
+        credentials: "include"
+      }).then(() => {
+        localStorage.clear(); // 任意：localStorageも削除する場合
+        window.location.href = "login.html";
+      });
+    });
+  });
+
+//  document.addEventListener("DOMContentLoaded", function () {
+  const container = document.getElementById("video-container");
+//    const currentUser = localStorage.getItem("currentUser");
+//    if (!currentUser) {
+//      alert("ログインが必要です。");
+//      window.location.href = "login.html";
+//    }
+//  });
+</script>
+
+<div id="video-modal" class="fixed inset-0 bg-black bg-opacity-80 hidden flex items-center justify-center z-50">
+  <video class="w-full h-full object-contain" controls autoplay></video>
+</div>
+
+</body>
+</html>

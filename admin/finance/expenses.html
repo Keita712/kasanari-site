@@ -1,0 +1,255 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>経費入力・編集 - KASANARI 管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .custom-border { border: 1px solid #444; }
+    .custom-input { background-color: #2A2A2A; border: 1px solid #444; color: white; }
+    .custom-input:focus { outline: none; border-color: #666; }
+    .action-btn {
+      padding: 0.25rem 0.75rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 0.375rem;
+    }
+    .action-btn:hover { opacity: 0.8; }
+    .custom-input {
+      background-color: #2A2A2A;
+      border: 1px solid #444;
+      color: white;
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+    }
+  </style>
+</head>
+<body class="bg-[#121212] text-white p-6">
+
+  <script>
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+      window.location.href = "login.html"; // ログインページへリダイレクト
+    }
+    function logout() {
+      localStorage.removeItem("adminLoggedIn");
+    }
+  </script>
+
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">経費入力・編集</h1>
+    <form class="space-y-6 bg-[#1A1A1A] p-6 rounded custom-border mb-10">
+      <div>
+        <label class="block text-sm mb-2 text-gray-300">日付</label>
+        <input type="date" class="w-full p-2 rounded custom-input">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-gray-300">カテゴリ</label>
+        <select class="w-full p-2 rounded custom-input">
+          <option>通信費</option>
+          <option>外注費</option>
+          <option>広告宣伝費</option>
+          <option>旅費交通費</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-gray-300">金額</label>
+        <input type="number" class="w-full p-2 rounded custom-input" placeholder="例：50000">
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-gray-300">税区分</label>
+        <select class="w-full p-2 rounded custom-input">
+          <option>課税</option>
+          <option>非課税</option>
+          <option>対象外</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm mb-2 text-gray-300">領収書アップロード</label>
+        <input type="file" class="block w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4
+          file:rounded file:border-0 file:text-sm file:font-semibold
+          file:bg-white file:text-black hover:file:opacity-80"/>
+      </div>
+      <div class="text-right">
+        <button type="submit" class="bg-white text-black font-semibold px-6 py-2 rounded hover:opacity-80">保存</button>
+      </div>
+    </form>
+
+    <div class="max-w-6xl mx-auto">
+      <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">経費一覧</h1>
+      <button class="bg-white text-black font-semibold px-4 py-2 rounded hover:opacity-80 text-sm" onclick="downloadCSV()">CSVダウンロード</button>
+      </div>
+      <div class="mb-4">
+      <label class="text-sm mr-2">月でフィルター:</label>
+      <select class="custom-input p-2 rounded text-sm" id="monthFilter" onchange="filterByMonth()">
+      <option value="">すべて表示</option>
+      <option value="2025-04">2025年4月</option>
+      <option value="2025-03">2025年3月</option>
+      </select>
+      </div>
+      <div class="bg-[#1A1A1A] p-4 rounded custom-border">
+      <table class="w-full text-sm text-left" id="expenseTable">
+      <thead class="text-gray-300 border-b border-[#444]">
+      <tr>
+      <th class="py-2 pr-4">日付</th>
+      <th class="py-2 pr-4">カテゴリ</th>
+      <th class="py-2 pr-4">金額</th>
+      <th class="py-2 pr-4">税区分</th>
+      <th class="py-2 pr-4">領収書</th>
+      <th class="py-2 pr-4">操作</th>
+      </tr>
+      </thead>
+      <tbody id="expenseBody">
+      <tr class="expense-row border-t border-[#444] hover:bg-[#2A2A2A]" data-date="2025-04-10">
+      <td class="py-2 pr-4">2025/04/10</td>
+      <td class="py-2 pr-4">通信費</td>
+      <td class="py-2 pr-4 amount">5000</td>
+      <td class="py-2 pr-4">課税</td>
+      <td class="py-2 pr-4">
+      <a class="underline text-white text-xs mr-2" href="#">PDF</a>
+      <label class="text-xs cursor-pointer underline">差替<input class="hidden" type="file"/></label>
+      </td>
+      <td class="py-2 pr-4 flex gap-2">
+      <button class="action-btn bg-white text-black" onclick="openEditModal(this)">編集</button>
+      <button class="action-btn bg-red-600 text-white" onclick="confirmDelete(this)">削除</button>
+      </td>
+      </tr>
+      <tr class="expense-row border-t border-[#444] hover:bg-[#2A2A2A]" data-date="2025-04-05">
+      <td class="py-2 pr-4">2025/04/05</td>
+      <td class="py-2 pr-4">外注費</td>
+      <td class="py-2 pr-4 amount">30000</td>
+      <td class="py-2 pr-4">非課税</td>
+      <td class="py-2 pr-4">
+      <a class="underline text-white text-xs mr-2" href="#">PDF</a>
+      <label class="text-xs cursor-pointer underline">差替<input class="hidden" type="file"/></label>
+      </td>
+      <td class="py-2 pr-4 flex gap-2">
+      <button class="action-btn bg-white text-black" onclick="openEditModal(this)">編集</button>
+      <button class="action-btn bg-red-600 text-white" onclick="confirmDelete(this)">削除</button>
+      </td>
+      </tr>
+      </tbody>
+      <tfoot>
+      <tr class="border-t-2 border-[#444] font-bold bg-[#181818]">
+      <td class="py-2 pr-4 text-right" colspan="2">合計</td>
+      <td class="py-2 pr-4 text-green-400" id="totalAmount">¥0</td>
+      <td colspan="3"></td>
+      </tr>
+      </tfoot>
+      </table>
+      </div>
+      </div>
+      <!-- 編集モーダル -->
+      <div class="modal hidden" id="editModal">
+      <div class="bg-[#1A1A1A] p-6 rounded custom-border w-full max-w-md">
+      <h2 class="text-xl font-bold mb-4">経費編集</h2>
+      <form class="space-y-4" id="editForm">
+      <input class="w-full p-2 rounded custom-input" id="editDate" placeholder="日付を選択" type="date">
+      <select class="w-full p-2 rounded custom-input" id="editCategory">
+      <option value="通信費">通信費</option>
+      <option value="外注費">外注費</option>
+      <option value="消耗品費">消耗品費</option>
+      <option value="交通費">交通費</option>
+      </select>
+      <input class="w-full p-2 rounded custom-input" id="editAmount" placeholder="金額" type="number">
+      <select class="w-full p-2 rounded custom-input" id="editTax">
+      <option value="課税">課税</option>
+      <option value="非課税">非課税</option>
+      <option value="対象外">対象外</option>
+      </select>
+      <div class="flex justify-end gap-4 mt-4">
+      <button class="action-btn bg-gray-500 text-white" onclick="closeModal()" type="button">キャンセル</button>
+      <button class="action-btn bg-white text-black" type="submit">保存</button>
+      </div>
+      </input></input></form>
+      </div>
+      </div>
+  </div>
+
+  <script>
+    function updateTotal() {
+      let total = 0;
+      document.querySelectorAll(".expense-row").forEach(row => {
+        if (!row.classList.contains("hidden")) {
+          const val = parseInt(row.querySelector(".amount").textContent) || 0;
+          total += val;
+        }
+      });
+      document.getElementById("totalAmount").textContent = "¥" + total.toLocaleString();
+    }
+
+    function filterByMonth() {
+      const selected = document.getElementById("monthFilter").value;
+      document.querySelectorAll(".expense-row").forEach(row => {
+        const date = row.getAttribute("data-date").substring(0, 7);
+        row.classList.toggle("hidden", selected && date !== selected);
+      });
+      updateTotal();
+    }
+
+    function downloadCSV() {
+      let csv = "日付,カテゴリ,金額,税区分\n";
+      document.querySelectorAll(".expense-row:not(.hidden)").forEach(row => {
+        const cells = row.querySelectorAll("td");
+        const line = [
+          cells[0].innerText,
+          cells[1].innerText,
+          cells[2].innerText,
+          cells[3].innerText,
+        ].join(",");
+        csv += line + "\n";
+      });
+
+      const blob = new Blob([csv], { type: "text/csv" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "expenses.csv";
+      link.click();
+    }
+
+    function confirmDelete(button) {
+      if (confirm("この経費を削除しますか？")) {
+        button.closest("tr").remove();
+        updateTotal();
+      }
+    }
+
+    let currentRow = null;
+
+    function openEditModal(button) {
+      currentRow = button.closest("tr");
+      document.getElementById("editDate").value = currentRow.cells[0].innerText;
+      document.getElementById("editCategory").value = currentRow.cells[1].innerText;
+      document.getElementById("editAmount").value = parseInt(currentRow.cells[2].innerText);
+      document.getElementById("editTax").value = currentRow.cells[3].innerText;
+      document.getElementById("editModal").classList.remove("hidden");
+    }
+
+    function closeModal() {
+      document.getElementById("editModal").classList.add("hidden");
+    }
+
+    document.getElementById("editForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      currentRow.cells[0].innerText = document.getElementById("editDate").value;
+      currentRow.cells[1].innerText = document.getElementById("editCategory").value;
+      currentRow.cells[2].innerText = document.getElementById("editAmount").value;
+      currentRow.cells[3].innerText = document.getElementById("editTax").value;
+      updateTotal();
+      closeModal();
+    });
+
+    updateTotal(); // 初回実行
+  </script>
+  
+</body>
+</html>

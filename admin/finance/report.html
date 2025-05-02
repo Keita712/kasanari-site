@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>損益レポート - KASANARI 管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>.custom-border { border: 1px solid #444; }</style>
+</head>
+<body class="bg-[#121212] text-white p-6">
+
+  <script>
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+      window.location.href = "login.html"; // ログインページへリダイレクト
+    }
+    function logout() {
+      localStorage.removeItem("adminLoggedIn");
+    }
+  </script>
+
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">損益レポート</h1>
+    <div class="bg-[#1A1A1A] p-6 rounded custom-border space-y-3">
+      <p class="text-sm">総売上：<span class="font-semibold">¥1,200,000</span></p>
+      <p class="text-sm">総経費：<span class="font-semibold">¥480,000</span></p>
+      <p class="text-sm">差引利益：<span class="font-semibold text-green-400">¥720,000</span></p>
+      <button class="mt-4 bg-white text-black font-semibold px-6 py-2 rounded hover:opacity-80">CSVダウンロード</button>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,365 @@
+<!-- /admin/videos/index.html 改訂版（タイトル編集・映像数表示・検索機能つき） -->
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>映像管理 | Admin</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .custom-border { border: 1px solid #444; }
+    .underline-hover:hover { text-decoration: underline; }
+  </style>
+</head>
+<body class="bg-[#121212] text-white min-h-screen p-6">
+
+  <div class="flex justify-between items-center mb-6">
+    <div class="flex items-center gap-4">
+      <h1 class="text-2xl font-bold">映像管理</h1>
+      <button onclick="resetAll()" class="bg-red-700 text-white px-3 py-2 rounded hover:bg-red-800 text-sm">すべてリセット</button>
+    </div>
+    <button onclick="openModal()" class="bg-white text-black px-4 py-2 rounded hover:bg-gray-300">映像を追加</button>
+  </div>
+
+  <!-- プラン対象映像セクション -->
+  <div class="flex justify-between items-center mb-2">
+    <h2 class="text-xl font-semibold">プラン対象映像 <span id="planCount" class="text-sm text-gray-400"></span></h2>
+    <input type="text" id="planSearch" placeholder="プラン名検索" class="bg-[#1A1A1A] border border-[#444] rounded px-3 py-1 text-sm">
+  </div>
+  <table class="w-full mb-10 bg-[#1A1A1A] rounded custom-border">
+    <thead class="bg-[#2A2A2A]">
+      <tr>
+        <th class="px-4 py-2 custom-border">公開</th>
+        <th class="px-4 py-2 custom-border cursor-pointer" onclick="sortTable('title', 'plan')">タイトル</th>
+        <th class="px-4 py-2 custom-border cursor-pointer" onclick="sortTable('date', 'plan')">登録日</th>     
+        <th class="px-4 py-2 custom-border">対象プラン</th>
+        <th class="px-4 py-2 custom-border">プレビュー</th>
+      </tr>
+    </thead>
+    <tbody id="planVideos"></tbody>
+  </table>
+
+  <hr class="border-[#444] my-10">
+
+  <!-- ユーザー専用映像セクション -->
+  <div class="flex justify-between items-center mb-2">
+    <h2 class="text-xl font-semibold">ユーザー専用映像 <span id="userCount" class="text-sm text-gray-400"></span></h2>
+    <input type="text" id="userSearch" placeholder="ユーザー名検索" class="bg-[#1A1A1A] border border-[#444] rounded px-3 py-1 text-sm">
+  </div>
+    <table class="w-full bg-[#1A1A1A] rounded custom-border">
+    <thead class="bg-[#2A2A2A]">
+      <tr>
+        <th class="px-4 py-2 custom-border">公開</th>
+        <th class="px-4 py-2 custom-border cursor-pointer" onclick="sortTable('title', 'user')">タイトル</th>
+        <th class="px-4 py-2 custom-border cursor-pointer" onclick="sortTable('date', 'user')">登録日</th>
+        <th class="px-4 py-2 custom-border">ユーザー名</th>
+        <th class="px-4 py-2 custom-border">プレビュー</th>
+      </tr>
+    </thead>
+    <tbody id="userVideos"></tbody>
+  </table>
+</div>
+
+<hr class="border-[#444] my-10">
+
+
+<div class="my-10 border-t border-[#444] pt-6">
+  <h2 class="text-xl font-semibold mb-4">人気映像ランキング（TOP10）</h2>
+  <div class="flex gap-4 mb-4">
+    <button onclick="loadRanking('all')" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">累計</button>
+    <button onclick="loadRanking('monthly')" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">月間</button>
+    <button onclick="loadRanking('weekly')" class="bg-gray-700 px-3 py-1 rounded hover:bg-gray-600">週間</button>
+  </div>
+  <div id="rankingCards" class="grid grid-cols-2 md:grid-cols-4 gap-4"></div>
+</div>
+
+<script>
+function loadRanking(period = 'all') {
+  fetch(`http://192.168.11.18:3000/api/analytics/popular?period=${period}`)
+    .then(res => res.json())
+    .then(data => {
+      const videos = JSON.parse(localStorage.getItem("videos")) || [];
+      const container = document.getElementById("rankingCards");
+      container.innerHTML = "";
+
+      data.forEach(item => {
+        const video = videos.find(v => v.id === item.id);
+        if (!video) return;
+
+        const card = document.createElement("div");
+        card.className = "bg-[#1A1A1A] p-4 rounded shadow";
+        card.innerHTML = `
+          <video src="/assets/videos/${video.sampleFilename}" class="w-full rounded mb-2" poster="/assets/videos/${video.sampleFilename.replace('.mp4', '.jpg')}" muted onmouseover="this.play()" onmouseout="this.pause(); this.currentTime=0;"></video>
+          <h3 class="text-sm font-semibold truncate">${video.title}</h3>
+          <p class="text-xs text-gray-400">再生数: ${item.count}</p>
+        `;
+        container.appendChild(card);
+      });
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => loadRanking("all"));
+</script>
+
+
+
+<!-- モーダル領域（追加・編集兼用） -->
+<div id="modal" class="fixed inset-0 hidden bg-black bg-opacity-60 flex items-center justify-center z-50">
+  <div class="bg-[#1A1A1A] p-6 rounded custom-border w-full max-w-2xl">
+    <h2 id="modalTitle" class="text-xl font-bold mb-4">映像追加</h2>
+    <form id="videoForm" class="space-y-4">
+      <input type="hidden" id="editIndex" value="">
+      <div>
+        <label class="block mb-1">タイトル</label>
+        <input type="text" id="title" class="w-full p-2 bg-[#2A2A2A] rounded border border-[#444]" required>
+      </div>
+      <div>
+        <label class="block mb-1">サンプル動画ファイル名（例: sample.mp4）</label>
+        <input type="text" id="sampleFilename" class="w-full p-2 bg-[#2A2A2A] rounded border border-[#444]" required>
+        <label class="block mb-1">本番動画ファイル名（例: main.mp4）</label>
+        <input type="text" id="mainFilename" class="w-full p-2 bg-[#2A2A2A] rounded border border-[#444]" required>
+      </div>
+      <div>
+        <label class="block mb-1">対象</label>
+        <div class="flex gap-4">
+          <label><input type="radio" name="targetType" value="plan" checked> プラン対象</label>
+          <label><input type="radio" name="targetType" value="user"> ユーザー専用</label>
+        </div>
+        <div id="planCheckboxes" class="flex gap-4 mt-2">
+          <label><input type="checkbox" value="Light"> Light</label>
+          <label><input type="checkbox" value="Standard"> Standard</label>
+          <label><input type="checkbox" value="Premium"> Premium</label>
+        </div>
+        <div id="userSelectArea" class="hidden mt-2">
+          <select id="userSelect" class="w-full p-2 bg-[#2A2A2A] border border-[#444] rounded">
+            <option value="user1">ユーザー1</option>
+            <option value="user2">ユーザー2</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <label><input type="checkbox" id="isPublic" checked> 公開する</label>
+      </div>
+      <div class="text-right">
+        <button type="button" onclick="closeModal()" class="border border-white text-white px-4 py-2 rounded hover:bg-[#2a2a2a]">キャンセル</button>
+        <button type="submit" class="bg-white text-black px-6 py-2 rounded hover:opacity-80">保存</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  // ★ここ追加！ユーザーリスト読み込み
+  const users = JSON.parse(localStorage.getItem('users')) || [];
+  const userSelect = document.getElementById('userSelect');
+  userSelect.innerHTML = "";
+
+  users.forEach(user => {
+    const option = document.createElement('option');
+    option.value = user.email;  // emailをvalueにする
+    option.textContent = user.store_name || user.manager_name || user.email;  // 表示名
+    userSelect.appendChild(option);
+  });
+
+  render(); // ← 最後に既存のrender呼び出し
+});
+
+let videos = JSON.parse(localStorage.getItem("videos")) || [];
+let sortDirection = { title: 'asc', date: 'asc' };
+
+function openModal(index = null) {
+  document.getElementById('videoForm').reset();
+  document.getElementById('userSelectArea').classList.add('hidden');
+  document.getElementById('planCheckboxes').classList.remove('hidden');
+  document.getElementById('editIndex').value = index !== null ? index : "";
+  document.getElementById('modalTitle').textContent = index !== null ? '映像編集' : '映像追加';
+  if (index !== null) {
+    const video = videos[index];
+    document.getElementById('title').value = video.title;
+    document.getElementById('sampleFilename').value = video.sampleFilename;
+    document.getElementById('mainFilename').value = video.mainFilename;
+    document.querySelector(`input[name='targetType'][value='${video.targetType}']`).checked = true;
+    if (video.targetType === 'plan') {
+      document.getElementById('planCheckboxes').classList.remove('hidden');
+      document.getElementById('userSelectArea').classList.add('hidden');
+      // ★ここ追加：登録プランのチェック復元
+      document.querySelectorAll('#planCheckboxes input[type="checkbox"]').forEach(cb => {
+        cb.checked = false; // 一旦リセット
+        if (Array.isArray(video.target) && video.target.includes(cb.value)) {
+          cb.checked = true; // 登録されているプランに一致したらチェック
+        }
+      });
+    } else {
+      document.getElementById('planCheckboxes').classList.add('hidden');
+      document.getElementById('userSelectArea').classList.remove('hidden');
+      document.getElementById('userSelect').value = video.target;
+    }
+    document.getElementById('isPublic').checked = video.isPublic;
+  }
+  document.getElementById('modal').classList.remove('hidden');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.add('hidden');
+}
+
+document.querySelectorAll("input[name='targetType']").forEach(el => {
+  el.addEventListener('change', function() {
+    if (this.value === 'user') {
+      document.getElementById('planCheckboxes').classList.add('hidden');
+      document.getElementById('userSelectArea').classList.remove('hidden');
+    } else {
+      document.getElementById('userSelectArea').classList.add('hidden');
+      document.getElementById('planCheckboxes').classList.remove('hidden');
+    }
+  });
+});
+
+document.getElementById('videoForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const title = document.getElementById('title').value;
+  const sampleFilename = document.getElementById('sampleFilename').value;
+  const mainFilename = document.getElementById('mainFilename').value;
+  const isPublic = document.getElementById('isPublic').checked;
+  const date = new Date().toISOString().split('T')[0];
+
+  const targetType = document.querySelector("input[name='targetType']:checked").value;
+  const target = targetType === 'plan'
+    ? Array.from(document.querySelectorAll("#planCheckboxes input:checked")).map(cb => cb.value)
+    : document.getElementById('userSelect').value;
+
+  if (!targetType || (Array.isArray(target) && target.length === 0) || (!Array.isArray(target) && !target)) {
+   alert("対象プランまたはユーザーが選択されていません。もう一度選択してください。");
+   return;
+  }
+
+  const editIndex = document.getElementById('editIndex').value;
+  if (editIndex !== "") {
+    // 編集時は既存のIDを維持
+    videos[editIndex] = {
+      ...videos[editIndex], // 既存のIDを残す
+      title,
+      sampleFilename,
+      mainFilename,
+      isPublic,
+      date,
+      targetType,
+      target
+    };
+  } else {
+    // 追加時に一意のIDを付ける
+    const newVideo = {
+      id: 'vid_' + Date.now(), // ← これが一意ID
+      title,
+      sampleFilename,
+      mainFilename,
+      isPublic,
+      date,
+      targetType,
+      target
+    };
+    videos.push(newVideo);
+  }
+ 
+    closeModal();
+    render();
+});
+
+//JavaScript側で、入力したら即フィルタリングされるようにする
+document.getElementById('planSearch').addEventListener('input', function() {
+  render();
+});
+document.getElementById('userSearch').addEventListener('input', function() {
+  render();
+});
+
+function render() {
+  const planVideos = document.getElementById('planVideos');
+  const userVideos = document.getElementById('userVideos');
+  const planSearch = document.getElementById('planSearch').value.toLowerCase();
+
+  planVideos.innerHTML = "";
+  userVideos.innerHTML = "";
+
+  let planCount = 0, userCount = 0;
+
+  videos.forEach((v, idx) => {
+    if (v.targetType === 'plan') {
+      const match = v.target.some(t => t.toLowerCase().includes(planSearch));
+      if (match || planSearch === "") {
+        planVideos.innerHTML += createRow(v, idx);
+        planCount++;
+      }
+    } else {
+      const userSearch = document.getElementById('userSearch').value.toLowerCase();
+      const matchUser = v.target.toLowerCase().includes(userSearch);
+      if (matchUser || userSearch === "") {
+        userVideos.innerHTML += createRow(v, idx);
+        userCount++;
+      }
+    }
+  });
+  document.getElementById('planCount').textContent = `(${planCount}本)`;
+  document.getElementById('userCount').textContent = `(${userCount}本)`;
+
+  // ← ここでlocalStorageに保存する！
+  localStorage.setItem("videos", JSON.stringify(videos));
+}
+
+function createRow(video, idx) {
+  return `<tr class="hover:bg-[#2A2A2A]">
+    <td class="px-4 py-2 custom-border text-center">${video.isPublic ? '公開' : '非公開'}</td>
+    <td class="px-4 py-2 custom-border underline-hover cursor-pointer" onclick="openModal(${idx})">${video.title}</td>
+    <td class="px-4 py-2 custom-border text-center">${video.date}</td>
+    <td class="px-4 py-2 custom-border text-center">${Array.isArray(video.target) ? video.target.join(', ') : video.target}</td>
+    <td class="px-4 py-2 custom-border flex flex-col items-center space-y-2">
+      <video src="/assets/videos/${video.sampleFilename}" class="w-40 h-24 object-cover rounded border border-[#333]" poster="/assets/videos/${video.sampleFilename.replace('.mp4', '.jpg')}" onmouseover="this.play()" onmouseout="this.pause(); this.currentTime=0;" muted></video>
+      <button onclick="deleteVideo(${idx})" class="bg-red-600 text-white text-xs px-2 py-1 rounded hover:bg-red-700 mt-2">削除</button>
+    </td>
+  </tr>`;
+}
+
+function deleteVideo(index) {
+  if (confirm("この映像を削除しますか？")) {
+    videos.splice(index, 1); // 配列から削除
+    render(); // 再描画＋ローカルストレージも更新
+  }
+}
+
+function resetAll() {
+  if (confirm("本当にすべて削除してリセットしますか？")) {
+    localStorage.removeItem("videos"); // ローカルストレージのデータ削除
+    videos = []; // 配列も空にする
+    render();    // 画面もリセット
+  }
+}
+
+function sortTable(key, tableType) {
+  videos.sort((a, b) => {
+    if (a.targetType !== tableType) return 0; // 他方のテーブルは無視
+    if (b.targetType !== tableType) return 0;
+    if (sortDirection[key] === 'asc') {
+      return a[key] > b[key] ? 1 : -1;
+    } else {
+      return a[key] < b[key] ? 1 : -1;
+    }
+  });
+  sortDirection[key] = sortDirection[key] === 'asc' ? 'desc' : 'asc';
+  render();
+}
+
+function filterPlan() {
+  render();
+}
+
+function shouldDisplay(video) {
+  const filter = document.getElementById("planFilter").value;
+  if (!filter) return true;
+  return video[filter];
+}
+
+</script>
+
+</body>
+</html>

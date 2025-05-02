@@ -1,0 +1,73 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>サイト設定 - 管理画面</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background-color: #121212; color: white; }
+    .custom-border { border: 1px solid #444; }
+    input, select {
+      background-color: #1e1e1e;
+      color: white;
+      border: 1px solid #444;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: #888;
+    }
+  </style>
+</head>
+<body class="p-6">
+
+  <script>
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+      window.location.href = "login.html"; // ログインページへリダイレクト
+    }
+    function logout() {
+      localStorage.removeItem("adminLoggedIn");
+    }
+  </script>
+
+  <div class="max-w-4xl mx-auto space-y-10">
+    <h1 class="text-2xl font-bold">サイト基本設定</h1>
+
+    <form class="space-y-6">
+      <div>
+        <label class="block mb-1 text-sm text-gray-400">サイト名</label>
+        <input type="text" name="site_name" placeholder="例：KASANARI" class="w-full px-3 py-2 rounded" />
+      </div>
+      <div>
+        <label class="block mb-1 text-sm text-gray-400">ロゴ画像アップロード</label>
+        <input type="file" name="logo" class="w-full px-3 py-2 rounded" />
+      </div>
+      <div>
+        <label class="block mb-1 text-sm text-gray-400">管理者メールアドレス</label>
+        <input type="email" name="admin_email" placeholder="admin@example.com" class="w-full px-3 py-2 rounded" />
+      </div>
+      <button type="submit" class="mt-4 px-4 py-2 bg-white text-black rounded hover:bg-gray-200">保存する</button>
+    </form>
+
+    <hr class="border-gray-600 my-10"/>
+
+    <h2 class="text-xl font-semibold">管理者パスワード変更</h2>
+    <form class="space-y-6">
+      <div>
+        <label class="block mb-1 text-sm text-gray-400">現在のパスワード</label>
+        <input type="password" name="current_password" class="w-full px-3 py-2 rounded" />
+      </div>
+      <div>
+        <label class="block mb-1 text-sm text-gray-400">新しいパスワード</label>
+        <input type="password" name="new_password" class="w-full px-3 py-2 rounded" />
+      </div>
+      <div>
+        <label class="block mb-1 text-sm text-gray-400">新しいパスワード（確認）</label>
+        <input type="password" name="confirm_password" class="w-full px-3 py-2 rounded" />
+      </div>
+      <button type="submit" class="mt-4 px-4 py-2 bg-white text-black rounded hover:bg-gray-200">変更する</button>
+    </form>
+  </div>
+</body>
+</html>

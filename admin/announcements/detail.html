@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>お知らせ詳細 - KASANARI 管理</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    .custom-border { border: 1px solid #444; }
+    .action-btn {
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      border-radius: 0.375rem;
+      transition: opacity 0.2s;
+    }
+    .action-btn:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body class="bg-[#121212] text-white min-h-screen p-6">
+
+  <script>
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+      window.location.href = "login.html"; // ログインページへリダイレクト
+    }
+    function logout() {
+      localStorage.removeItem("adminLoggedIn");
+    }
+  </script>
+
+<div class="max-w-4xl mx-auto">
+<h1 class="text-2xl font-bold mb-6">お知らせ詳細</h1>
+<div class="space-y-4 bg-[#1A1A1A] p-6 rounded custom-border">
+<h2 class="text-xl font-semibold" id="notice-title">【重要】システムメンテナンスのお知らせ</h2>
+<p class="text-sm text-gray-400" id="notice-date">2025年4月15日 公開</p>
+<p class="text-base mt-4 leading-relaxed" id="notice-body">
+        以下の日程でシステムメンテナンスを実施いたします。<br/>
+        2025年4月18日 0:00〜6:00（予定）<br/>
+        この間サービスをご利用いただけません。<br/><br/>
+        ご不便をおかけしますが、何卒ご理解のほどよろしくお願いいたします。
+      </p>
+</div>
+<div class="flex justify-end gap-4 mt-6">
+<button class="action-btn bg-white text-black" onclick="openEditModal()" type="button">編集する</button>
+<button class="action-btn bg-red-600 text-white" onclick="confirmDelete()">削除する</button>
+</div>
+</div>
+<script>
+    function confirmDelete() {
+      if (confirm('このお知らせを削除してもよろしいですか？')) {
+        alert('削除処理を実行します（仮）');
+        // 実際の削除処理はここに追加（API呼び出しなど）
+      }
+    }
+  </script>
+<!-- 編集モーダル -->
+<div class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center hidden z-50" id="editModal">
+<div class="bg-[#1A1A1A] p-6 rounded-lg shadow-lg w-full max-w-xl space-y-4">
+<h2 class="text-xl font-semibold mb-2">お知らせを編集</h2>
+<form class="space-y-4" id="editForm">
+<div>
+<label class="block mb-1 text-sm text-gray-300">タイトル</label>
+<input class="w-full px-3 py-2 rounded bg-[#1e1e1e] border border-gray-600 text-white" type="text" value="【重要】システムメンテナンスのお知らせ"/>
+</div>
+<div>
+<label class="block mb-1 text-sm text-gray-300">公開日</label>
+<input class="w-full px-3 py-2 rounded bg-[#1e1e1e] border border-gray-600 text-white" type="date" value="2025-04-15"/>
+</div>
+<div>
+<label class="block mb-1 text-sm text-gray-300">本文</label>
+<textarea class="w-full px-3 py-2 rounded bg-[#1e1e1e] border border-gray-600 text-white" rows="6">以下の日程でシステムメンテナンスを実施いたします。
+2025年4月18日 0:00〜6:00（予定）
+この間サービスをご利用いただけません。
+
+ご不便をおかけしますが、何卒ご理解のほどよろしくお願いいたします。</textarea>
+</div>
+<div class="text-right space-x-2">
+<button class="px-4 py-2 border rounded border-gray-400 text-white" onclick="closeEditModal()" type="button">キャンセル</button>
+<button class="px-4 py-2 bg-white text-black rounded" type="submit">保存する</button>
+</div>
+</form>
+</div>
+</div>
+<script>
+  function openEditModal() {
+    document.getElementById('editModal').classList.remove('hidden');
+  }
+  function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+  }
+</script>
+<script>
+  function openEditModal() {
+    document.getElementById('editModal').classList.remove('hidden');
+    document.querySelector('#editForm input[type="text"]').value = document.getElementById('notice-title').innerText;
+    document.querySelector('#editForm input[type="date"]').value = document.getElementById('notice-date').innerText.replaceAll("/", "-").replace(" 公開", "");
+    document.querySelector('#editForm textarea').value = document.getElementById('notice-body').innerText;
+  }
+
+  function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("editForm");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const newTitle = form.querySelector('input[type="text"]').value;
+      const newDate = form.querySelector('input[type="date"]').value;
+      const newBody = form.querySelector('textarea').value;
+
+      document.getElementById("notice-title").innerText = newTitle;
+      document.getElementById("notice-date").innerText = newDate.replace(/-/g, "/") + " 公開";
+      document.getElementById("notice-body").innerText = newBody;
+
+      closeEditModal();
+    });
+  });
+</script></body>
+</html>

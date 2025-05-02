@@ -1,0 +1,38 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>お知らせ詳細</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .custom-border { border: 1px solid #444; }
+    .action-btn {
+      padding: 0.5rem 1rem;
+      font-weight: 600;
+      border-radius: 0.375rem;
+      transition: opacity 0.2s;
+    }
+    .action-btn:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body class="bg-black text-white p-8 font-sans">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-2xl font-bold mb-6">お知らせ詳細</h1>
+    <div class="space-y-4 bg-[#1A1A1A] p-6 rounded custom-border">
+    <h2 class="text-xl font-semibold" id="notice-title">【重要】システムメンテナンスのお知らせ</h2>
+    <p class="text-sm text-gray-400" id="notice-date">2025年4月15日 公開</p>
+    <p class="text-base mt-4 leading-relaxed" id="notice-body">
+            以下の日程でシステムメンテナンスを実施いたします。<br/>
+            2025年4月18日 0:00〜6:00（予定）<br/>
+            この間サービスをご利用いただけません。<br/><br/>
+            ご不便をおかけしますが、何卒ご理解のほどよろしくお願いいたします。
+          </p>
+    </div>
+    </div>
+  <a href="dashboard.html" class="text-blue-400 underline">← マイページに戻る</a>
+</body>
+</html>

@@ -1,0 +1,216 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>入力内容確認 - KASANARI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    .label {
+      color: #aaa;
+      font-size: 0.9rem;
+    }
+    .box {
+      border: 1px solid #444;
+      background-color: #1a1a1a;
+      padding: 1rem;
+      border-radius: 0.5rem;
+    }
+    .outline-white-button {
+      border: 1px solid white;
+      color: white;
+      padding: 0.5rem 2rem;
+      border-radius: 0.375rem;
+      transition: all 0.2s ease;
+    }
+    .outline-white-button:hover {
+      background-color: white;
+      color: black;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      background-color: #666;
+    }
+    .dot.active {
+      background-color: #fff;
+    }
+    .bar {
+      height: 2px;
+      background-color: #444;
+      flex: 0.8;
+      margin-bottom: 22px;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .label {
+      font-size: 10px;
+      color: #aaa;
+      margin-top: 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="px-6 py-12" onload="loadConfirmationData()">
+<!-- ステップバー -->
+<section class="max-w-md mx-auto mb-8">
+<div class="flex items-center justify-between">
+<div class="step">
+<div class="dot"></div>
+<div class="label">登録</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">プラン</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">支払い</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot active"></div>
+<div class="label">確認</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">完了</div>
+</div>
+</div>
+</section>
+<section class="max-w-3xl mx-auto space-y-12">
+<h1 class="text-3xl font-bold mb-4">入力内容の確認</h1>
+<p class="text-gray-400 text-sm">以下の内容で問題がなければ「確定する」ボタンを押してください。</p>
+<!-- ユーザー情報 -->
+<div class="space-y-2">
+<h2 class="text-xl font-semibold mb-2">ユーザー情報</h2>
+<div class="box space-y-2" id="user_info"></div>
+</div>
+<!-- プラン情報 -->
+<div class="space-y-2">
+<h2 class="text-xl font-semibold mb-2">ご利用プラン</h2>
+<div class="box" id="plan_info"></div>
+</div>
+<!-- お支払い情報 -->
+<div class="space-y-2">
+<h2 class="text-xl font-semibold mb-2">お支払い方法</h2>
+<div class="box space-y-1" id="payment_info"></div>
+</div>
+<!-- ボタンエリア -->
+<div class="text-center pt-6">
+<div class="flex flex-col sm:flex-row justify-center items-center gap-4">
+<a class="outline-white-button" href="register.html">修正する</a>
+<form action="register-complete.html" method="GET" onsubmit="return saveFinalUserInfo();">
+  <button class="bg-white text-black px-8 py-2 rounded hover:bg-gray-200 transition" type="submit">
+    確定する
+  </button>
+</form>
+</div>
+</div>
+</section>
+<script>
+  function loadConfirmationData() {
+    const storedPlan = localStorage.getItem('selected_plan_display');
+    if (!storedPlan) {
+      alert('プラン情報が取得できませんでした。最初からやり直してください。');
+      window.location.href = '/plan-select.html';
+      return;
+    }
+
+    document.getElementById("user_info").innerHTML = `
+      <p><span class="label">店舗名：</span>${localStorage.getItem('store_name')}</p>
+      <p><span class="label">店舗住所：</span>${localStorage.getItem('store_address')}</p>
+      <p><span class="label">業種：</span>${localStorage.getItem('industry')}</p>
+      <p><span class="label">担当者名：</span>${localStorage.getItem('manager_name')}</p>
+      <p><span class="label">メールアドレス：</span>${localStorage.getItem('email')}</p>
+    `;
+    document.getElementById("plan_info").innerHTML = `
+      <p><span class="label">選択プラン：</span>◆ ${storedPlan} ◆</p>
+    `;
+    document.getElementById("payment_info").innerHTML = `
+      <p><span class="label">カード番号：</span>**** **** **** ${localStorage.getItem('card_last4')}</p>
+      <p><span class="label">有効期限：</span>${localStorage.getItem('expiry')}</p>
+      <p><span class="label">カード名義：</span>${localStorage.getItem('card_name')}</p>
+    `;
+  }
+
+  function saveFinalUserInfo() {
+  const email = localStorage.getItem("email") || "";
+  const password = localStorage.getItem("password") || "";
+  const store_name = localStorage.getItem("store_name") || "";
+  const store_address = localStorage.getItem("store_address") || "";
+  const industry = localStorage.getItem("industry") || "";
+  const manager_name = localStorage.getItem("manager_name") || "";
+
+    // ✅ CookieをNASにセット（これがないと以降のAPIが失敗）
+    fetch(`/.netlify/functions/setuserid/${encodeURIComponent(email)}`, {
+      credentials: 'include'
+    });
+
+    // ここ！planを確実に取得
+    let selectedPlan = localStorage.getItem('selected_plan_display') || "未登録";
+    
+    fetch('/.netlify/functions/userinfo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({
+      storeName: store_name,
+      storeAddress: store_address,
+      industry: industry,
+      managerName: manager_name,
+      email: email,
+      plan: selectedPlan
+    })
+  });
+
+  // まず既存のusersを取得
+  let users = JSON.parse(localStorage.getItem("users") || "[]");
+
+  // 今登録中のユーザーを検索
+  const userIndex = users.findIndex(user => user.email === email);
+
+  if (userIndex !== -1) {
+    // 既存ユーザーが見つかったら、planを上書き保存！
+    users[userIndex].plan = selectedPlan;
+  } else {
+    // もしなぜか見つからなかったら新規追加
+    const newUser = {
+      email,
+      password,
+      store_name,
+      store_address,
+      industry,
+      manager_name,
+      plan: selectedPlan
+    };
+    users.push(newUser);
+  }
+
+  // usersを再保存
+  localStorage.setItem("users", JSON.stringify(users));
+
+  // currentUser, currentPlanも設定
+  localStorage.setItem('currentUser', email);
+  localStorage.setItem('currentPlan', selectedPlan);
+
+  return true;
+}
+
+</script></body>
+</html>

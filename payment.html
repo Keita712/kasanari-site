@@ -1,0 +1,137 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>お支払い方法 - KASANARI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+    body {
+      background-color: #000;
+      color: #fff;
+      font-family: 'Noto Sans JP', sans-serif;
+    }
+    input {
+      background-color: #1a1a1a;
+      border: 1px solid #444;
+      color: white;
+    }
+    input:focus {
+      outline: none;
+      border-color: white;
+      box-shadow: 0 0 0 1px white;
+    }
+    .card-icons {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .card-icons img {
+      height: 24px;
+      opacity: 0.8;
+    }
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 9999px;
+      background-color: #666;
+    }
+    .dot.active {
+      background-color: #fff;
+    }
+    .bar {
+      height: 2px;
+      background-color: #444;
+      flex: 0.8;
+      margin-bottom: 22px;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .label {
+      font-size: 10px;
+      color: #aaa;
+      margin-top: 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="px-6 py-12">
+<!-- ステップバー -->
+<section class="max-w-md mx-auto mb-8">
+<div class="flex items-center justify-between">
+<div class="step">
+<div class="dot"></div>
+<div class="label">登録</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">プラン</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot active"></div>
+<div class="label">支払い</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">確認</div>
+</div>
+<div class="bar"></div>
+<div class="step">
+<div class="dot"></div>
+<div class="label">完了</div>
+</div>
+</div>
+</section>
+<section class="max-w-xl mx-auto space-y-10">
+<h1 class="text-3xl font-bold mb-4">お支払い方法の登録</h1>
+<p class="text-gray-400 text-sm">現在、KASANARIのご利用にはクレジットカード決済のみ対応しています。</p>
+<form action="confirmation.html" class="space-y-6" method="GET" onsubmit="savePayment(); return true;">
+<div>
+<label class="block text-sm mb-1">カード番号</label>
+<input class="w-full px-4 py-2 rounded" id="card_number" name="card_number" placeholder="1234 5678 9012 3456" required="" type="text"/>
+<div class="card-icons">
+<img alt="Visa" src="https://img.icons8.com/color/48/visa.png"/>
+<img alt="Mastercard" src="https://img.icons8.com/color/48/mastercard-logo.png"/>
+<img alt="Amex" src="https://img.icons8.com/color/48/amex.png"/>
+</div>
+</div>
+<div class="flex gap-4">
+<div class="w-1/2">
+<label class="block text-sm mb-1">有効期限（月/年）</label>
+<input class="w-full px-4 py-2 rounded" id="expiry" name="expiry" placeholder="MM/YY" required="" type="text"/>
+</div>
+<div class="w-1/2">
+<label class="block text-sm mb-1">セキュリティコード</label>
+<input class="w-full px-4 py-2 rounded" name="cvc" placeholder="123" required="" type="password"/>
+</div>
+</div>
+<div>
+<label class="block text-sm mb-1">カード名義（半角英字）</label>
+<input class="w-full px-4 py-2 rounded" id="card_name" name="card_name" placeholder="TARO YAMADA" required="" type="text"/>
+</div>
+<div class="text-center pt-6">
+<button class="bg-white text-black px-8 py-2 rounded hover:bg-gray-200 transition" type="submit">
+          登録して入力内容の確認へ
+        </button>
+</div>
+</form>
+</section>
+<script>
+function savePayment() {
+  const num = document.getElementById('card_number').value;
+  localStorage.setItem('card_last4', num.slice(-4));
+  localStorage.setItem('expiry', document.getElementById('expiry').value);
+  localStorage.setItem('card_name', document.getElementById('card_name').value);
+}
+</script>
+</body>
+</html>

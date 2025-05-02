@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>KASANARI - ログイン</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP&amp;display=swap" rel="stylesheet"/>
+<style>
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background-color: #000;
+      color: #fff;
+    }
+    .form-input {
+      background-color: #1a1a1a;
+      border: 1px solid #444;
+      color: white;
+    }
+    .form-input:focus {
+      outline: none;
+      border-color: white;
+      box-shadow: 0 0 0 1px white;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-6">
+<div class="w-full max-w-md">
+<h2 class="text-2xl font-semibold text-center mb-8">ログイン</h2>
+<form action="#" class="space-y-6" method="GET" onsubmit="return secureLogin();">
+<div>
+<label class="block text-sm mb-1">メールアドレス</label>
+<input class="form-input w-full px-4 py-2 rounded" name="email" required="" type="email"/>
+</div>
+<div>
+<label class="block text-sm mb-1">パスワード</label>
+<input class="form-input w-full px-4 py-2 rounded" name="password" required="" type="password"/>
+</div>
+<div class="text-center">
+<button class="bg-white text-black px-6 py-2 rounded hover:bg-gray-200 transition" type="submit">ログイン</button>
+</div>
+</form>
+<p class="text-center text-sm text-gray-500 mt-6">
+      アカウントをお持ちでない方は <a class="text-white underline hover:text-gray-300" href="/register">こちら</a> からご登録ください。
+    </p>
+</div>
+<script>
+// 簡易ハッシュ関数（SHA-256の代用として Base64エンコードを模倣）
+function encode(str) {
+  return btoa(unescape(encodeURIComponent(str)));
+}
+
+function secureLogin() {
+  const emailInput = document.querySelector('input[name="email"]').value;
+  const passwordInput = document.querySelector('input[name="password"]').value;
+  const hashedPassword = encode(passwordInput);
+
+  const users = JSON.parse(localStorage.getItem("users") || "[]");
+  const match = users.find(user => user.email === emailInput && user.password === hashedPassword);
+
+  if (match) {
+    // ユーザーのemailだけ保存（文字列で保存）
+    localStorage.setItem("currentUser", match.email);
+
+    // NASにユーザー識別用Cookieをセット（NAS内JSONの識別子）
+    fetch(`http://192.168.11.18:3000/api/setuserid/${encodeURIComponent(emailInput)}`, {
+      credentials: 'include'
+    });
+
+    window.location.href = "dashboard.html";
+    return false;
+  } else {
+    alert("メールアドレスまたはパスワードが正しくありません。");
+    return false;
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function () {
+  fetch("http://192.168.11.18:3000/api/userinfo", {
+    credentials: "include"
+  })
+  .then(res => {
+    if (res.ok) {
+      // すでにログイン中と判断
+      window.location.href = "dashboard.html";
+    }
+  })
+  .catch(() => {
+    // エラー時は無視（通常のログイン処理が続行される）
+  });
+});
+
+</script></body>
+</html>

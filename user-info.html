@@ -1,0 +1,96 @@
+
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ユーザー情報 - KASANARI</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body {
+    background-color: #121212;
+    color: #E0E0E0;
+  }
+
+  .card {
+    background-color: #1A1A1A;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  }
+
+  .label {
+    color: #AAAAAA;
+    font-weight: 600;
+  }
+
+  .action-button {
+    background-color: #2A2A2A;
+    color: #E0E0E0;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    transition: all 0.3s;
+  }
+
+  .action-button:hover {
+    background-color: #FFFFFF;
+    color: #000000;
+  }
+</style>
+
+</head>
+<body class="px-6 py-12">
+<section class="max-w-2xl mx-auto space-y-8">
+  <div class="max-w-2xl mx-auto mt-10 card">
+    <h2 class="text-2xl font-bold mb-6 text-center">マイページ</h2>
+    
+    <div class="space-y-4 text-sm">
+      <div><span class="label">店舗名：</span><span id="storeName">---</span></div>
+      <div><span class="label">店舗住所：</span><span id="storeAddress">---</span></div>
+      <div><span class="label">業種：</span><span id="industry">---</span></div>
+      <div><span class="label">担当者名：</span><span id="managerName">---</span></div>
+      <div><span class="label">プラン：</span><span id="plan">---</span></div>
+    </div>
+  
+    <div class="mt-8 grid grid-cols-2 gap-4">
+      <button onclick="location.href='edit-user.html'" class="action-button">ユーザー情報編集</button>
+      <button onclick="location.href='plan-edit.html'" class="action-button">プラン変更</button>
+      <button onclick="location.href='payment-change.html'" class="action-button">支払い方法変更</button>
+      <button onclick="location.href='change-password.html'" class="action-button">パスワード変更</button>
+    </div>
+  </div>
+   
+</section>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  fetch('http://192.168.11.18:3000/api/userinfo', { credentials: 'include' })
+  .then(res => res.json())
+  .then(data => {
+    document.getElementById('storeName').textContent = data.storeName || '未登録';
+    document.getElementById('storeAddress').textContent = data.storeAddress || '未登録';
+    document.getElementById('industry').textContent = data.industry || '未登録';
+    document.getElementById('managerName').textContent = data.managerName || '未登録';
+    document.getElementById('plan').textContent = ["Light", "Standard", "Premium"].includes(data.plan) ? data.plan : '未登録';
+  })
+  .catch(() => {
+    alert("ユーザー情報の取得に失敗しました。ログインし直してください。");
+    window.location.href = "login.html";
+  });
+
+});
+</script>
+  
+<!--
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser) {
+      alert("ログインが必要です。");
+      window.location.href = "login.html";
+    }
+  });
+</script>
+-->
+</body>
+</html>

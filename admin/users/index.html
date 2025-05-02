@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ユーザー一覧 - KASANARI 管理</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .custom-border { border: 1px solid #444; }
+    .custom-link:hover { opacity: 0.8; text-decoration: underline; }
+  </style>
+</head>
+<body class="bg-[#121212] text-white min-h-screen">
+
+  <script>
+    if (localStorage.getItem("adminLoggedIn") !== "true") {
+      window.location.href = "login.html"; // ログインページへリダイレクト
+    }
+    function logout() {
+      localStorage.removeItem("adminLoggedIn");
+    }
+  </script>
+
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">ユーザー一覧</h1>
+    <table class="w-full table-auto bg-[#1A1A1A] text-left custom-border rounded overflow-hidden">
+      <thead class="bg-[#2A2A2A] text-gray-300">
+        <tr>
+          <th class="px-4 py-2 custom-border">ユーザー名</th>
+          <th class="px-4 py-2 custom-border">メールアドレス</th>
+          <th class="px-4 py-2 custom-border">プラン</th>
+          <th class="px-4 py-2 custom-border">操作</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="hover:bg-[#2A2A2A] transition-colors">
+          <td class="px-4 py-2 custom-border">山田 太郎</td>
+          <td class="px-4 py-2 custom-border">taro@example.com</td>
+          <td class="px-4 py-2 custom-border">スタンダード</td>
+          <td class="px-4 py-2 custom-border">
+            <a href="detail.html" class="custom-link text-white">詳細</a>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
