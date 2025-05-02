@@ -64,7 +64,7 @@
 </section>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
-  fetch('http://192.168.11.18:3000/api/userinfo', { credentials: 'include' })
+  fetch('/.netlify/functions/userinfo', { credentials: 'include' })
   .then(res => res.json())
   .then(data => {
     document.getElementById('storeName').textContent = data.storeName || '未登録';
